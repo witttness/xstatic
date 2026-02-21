@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Extatic.Api/Extatic.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Extatic.Api.Tests/Extatic.Api.Tests.csproj" />
+  </Folder>
+</Solution>

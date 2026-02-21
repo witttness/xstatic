@@ -137,7 +137,7 @@ yarn install
 ng serve
 ```
 
-The dashboard is available at `http://localhost:4200` and the API at `http://localhost:5000`. OAuth2 Proxy handles login at `http://localhost:4180`.
+The dashboard is available at `http://localhost:4200` and the API at `http://localhost:5001`. OAuth2 Proxy handles login at `http://localhost:4180`.
 
 ### Option B: Manual setup
 

@@ -57,7 +57,7 @@ extatic/
 ```bash
 docker-compose up -d
 cd src/extatic-dashboard && yarn install && ng serve
-# API: http://localhost:5000 | Dashboard: http://localhost:4200 | OAuth2 Proxy: http://localhost:4180
+# API: http://localhost:5001 | Dashboard: http://localhost:4200 | OAuth2 Proxy: http://localhost:4180
 ```
 
 ### Backend
