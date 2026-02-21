@@ -139,6 +139,48 @@ ng serve
 
 The dashboard is available at `http://localhost:4200` and the API at `http://localhost:5001`. OAuth2 Proxy handles login at `http://localhost:4180`.
 
+#### Local authentication (Dex)
+
+The Docker Compose stack includes **Dex** — a self-contained OIDC identity provider so you don't need any external OAuth app credentials for local development. Its configuration lives in `infra/oauth2-proxy/dex-config.yaml`.
+
+A default test user is pre-configured:
+
+| Field | Value |
+|---|---|
+| Email | `dev@extatic.local` |
+| Password | `password` |
+
+**Adding more test users**
+
+Append entries to the `staticPasswords` list in `dex-config.yaml`. Each entry requires a bcrypt hash of the password — generate one with:
+
+```bash
+# Requires htpasswd (part of apache2-utils / httpd-tools)
+htpasswd -nbB "" "yourpassword" | cut -d: -f2
+```
+
+Then add the entry:
+
+```yaml
+staticPasswords:
+  - email: dev@extatic.local
+    hash: "$2a$10$..."   # existing user
+    username: dev
+    userID: "08a8684b-db88-4b73-90a9-3cd1661f5466"
+  - email: alice@extatic.local
+    hash: "$2a$10$..."   # output from htpasswd above
+    username: alice
+    userID: "a1b2c3d4-0000-0000-0000-000000000001"  # any unique UUID
+```
+
+Restart the `dex` container to pick up the change:
+
+```bash
+docker-compose restart dex
+```
+
+> **Note:** Dex is for local development only. In production, OAuth2 Proxy is configured with a real OIDC provider (Google, Microsoft, GitHub, etc.) and the `dex` service is not deployed.
+
 ### Option B: Manual setup
 
 **Backend:**
