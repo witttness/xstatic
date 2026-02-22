@@ -1,8 +1,78 @@
+## OS
+.DS_Store
+
+## Node / frontend
 node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp/
+.pnp.js
+.cache/
+.angular/
+.angular/cache/
 dist/
 build/
-.env
-.DS_Store
+
+## .NET / Visual Studio
+.vs/
+# Build folders
+bin/
+obj/
+**/bin/
+**/obj/
+out/
+publish/
+artifacts/
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## NuGet
+*.nupkg
+packages/
+
+## Logs and test results
 *.log
-.idea/
+logs/
+TestResults/
+coverage/
+*.coverage
+coverage*.xml
+*.trx
+
+## Docker / local env
+.env
+.env.*
+docker-compose.override.yml
+
+## IDEs / editors
 .vscode/
+.idea/
+# JetBrains Rider
+*.sln.iml
+
+## Azure / storage emulators
+.azure/
+
+## Certificates / secrets
+secrets.json
+*.pfx
+*.pem
+credentials
+
+## Databases and local caches
+*.db
+*.db-journal
+
+## Misc
+*~
+*.swp
+*.tmp
+Thumbs.db
+
+# Keep the repo clean of large or generated artifacts
+/.publish
+/.bundle
