@@ -181,6 +181,23 @@ docker-compose restart dex
 
 > **Note:** Dex is for local development only. In production, OAuth2 Proxy is configured with a real OIDC provider (Google, Microsoft, GitHub, etc.) and the `dex` service is not deployed.
 
+### Hosts mapping for local browser discovery
+
+If the Dex `issuer` is set to `http://dex:5556/dex` (container DNS) then your browser must be able to resolve the hostname `dex` to reach the Dex server during the OAuth redirect flow. Add the following line to your `/etc/hosts` on macOS/Linux:
+
+```text
+127.0.0.1 dex
+```
+
+After updating `/etc/hosts`, restart the `oauth2-proxy` service so it re-performs OIDC discovery and uses the hostname your browser can reach:
+
+```bash
+docker compose stop oauth2-proxy
+docker compose up -d oauth2-proxy
+```
+
+If you prefer not to edit `/etc/hosts`, set the Dex `issuer` back to `http://localhost:5556/dex` in `infra/oauth2-proxy/dex-config.yaml` and restart the `dex` container instead.
+
 ### Option B: Manual setup
 
 **Backend:**

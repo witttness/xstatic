@@ -7,9 +7,33 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Extatic.Api.Auth.Handlers;
 
+/// <summary>
+/// Authorization handler that enforces app-level roles for Platform users.
+/// </summary>
+/// <remarks>
+/// This handler checks the current HTTP context for a `CurrentApp` instance
+/// (stored in `HttpContext.Items`) and validates whether the current user is
+/// allowed to perform the action described by the <see cref="AppRoleRequirement"/>.
+/// Behavior:
+/// - If the user is the app owner (`App.OwnerId`) the requirement always succeeds.
+/// - If the requirement is marked <c>OwnerOnly</c> and the user is not the owner,
+///   the requirement fails.
+/// - Otherwise the handler looks up an accepted <c>Collaborator</c> record and
+///   ensures the collaborator's role meets the optional <c>MinimumRole</c>.
+/// </remarks>
 public class AppRoleHandler(IServiceScopeFactory scopeFactory, IHttpContextAccessor httpContextAccessor)
     : AuthorizationHandler<AppRoleRequirement>
 {
+    /// <summary>
+    /// Handles evaluation of the <see cref="AppRoleRequirement"/> for the current
+    /// authorization context.
+    /// </summary>
+    /// <param name="context">The current <see cref="AuthorizationHandlerContext"/>.</param>
+    /// <param name="requirement">The <see cref="AppRoleRequirement"/> to evaluate.
+    /// If <c>OwnerOnly</c> is true the requirement only succeeds for the app owner.
+    /// If <c>MinimumRole</c> is set, a collaborator must have a role greater than or
+    /// equal to that value and have accepted the invitation.</param>
+    /// <returns>A <see cref="Task"/> that completes when evaluation finishes.</returns>
     protected override async Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
         AppRoleRequirement requirement)
