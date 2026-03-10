@@ -141,3 +141,4 @@
 /Users/danyo/ai/extatic/src/Extatic.Api/obj/Debug/net10.0/Extatic.Api.pdb
 /Users/danyo/ai/extatic/src/Extatic.Api/obj/Debug/net10.0/Extatic.Api.genruntimeconfig.cache
 /Users/danyo/ai/extatic/src/Extatic.Api/obj/Debug/net10.0/ref/Extatic.Api.dll
+/Users/danyo/ai/extatic/src/Extatic.Api/obj/Debug/net10.0/Extatic.Api.sourcelink.json

@@ -1,0 +1,4 @@
+{
+  "/auth/**": { "target": "http://localhost:5001", "secure": false, "changeOrigin": true },
+  "/apps/**": { "target": "http://localhost:5001", "secure": false, "changeOrigin": true }
+}

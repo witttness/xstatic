@@ -21,8 +21,7 @@ staticClients:
 enablePasswordDB: true
 staticPasswords:
   - email: dev@extatic.local
-    # bcrypt hash of "password" — local dev only, never use in production
-    # hash: "$2a$10$2b2cU8CPhOTaGrs1HRQuAueS7JTT5ZHsHSzYiFPm1leZck7Mc8T4u"
-    hash: "$2b$12$a2RDDN6Bnwj/F67FO5jtk.S5M.z.Cm8l2W/8P65YhRO.04mCNPDte"
+    # bcrypt hash of "abc123" — local dev only, never use in production
+    hash: "$2a$10$E2Ivym5ciRuYBouBP76Ti.lPtffPx0h0BqmH717R4aYi0ssqdd88S"
     username: dev
     userID: "08a8684b-db88-4b73-90a9-3cd1661f5466"

@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #0B0B0F;
+  --color-surface: #111118;
+  --color-border: #222228;
+  --color-text-primary: #ECECEC;
+  --color-text-muted: #6B7280;
+  --color-accent: #3B82F6;
+  --color-success: #22C55E;
+  --color-error: #EF4444;
+  --color-warning: #F59E0B;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, 'Fira Code', monospace;
+}
+
+html, body { @apply bg-background text-text-primary font-sans min-h-screen; }
+* { @apply border-border; }

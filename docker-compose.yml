@@ -58,12 +58,14 @@ services:
       timeout: 5s
       retries: 10
 
-  # Sits in front of the API on :4180. Handles login via Dex and injects
-  # X-Forwarded-User / X-Forwarded-Email headers trusted by the Platform API.
+  # Sits in front of the Angular dev server on :4180. Handles login via Dex and injects
+  # X-Forwarded-User / X-Forwarded-Email headers on every proxied request.
+  # Auth flow: Browser → :4180 (oauth2-proxy) → :4200 (ng serve) → proxy.conf.json → :5001 (API)
+  # The headers injected here are carried through by the Angular dev proxy to the API.
   # Dashboard → http://localhost:4180  (authenticated entry point)
   # API direct → http://localhost:5001 (unauthenticated, useful for Client API / curl)
   oauth2-proxy:
-    image: quay.io/oauth2-proxy/oauth2-proxy:v7.7.1
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.14.3
     ports:
       - "4180:4180"
     environment:
@@ -79,7 +81,9 @@ services:
       # 32-byte base64 cookie secret — local dev only, regenerate for any other environment
       # with: openssl rand -base64 32
       - OAUTH2_PROXY_COOKIE_SECRET=c2VjcmV0Y2hhbmdlbWVpbnByb2R1Y3Rpb24xMjM0NTY=
-      - OAUTH2_PROXY_UPSTREAM=http://api:8080
+      # Upstream is the Angular dev server. All authenticated requests are forwarded here;
+      # proxy.conf.json then routes API calls onward to the .NET API on :5001.
+      - OAUTH2_PROXY_UPSTREAMS=http://host.docker.internal:4200
       - OAUTH2_PROXY_EMAIL_DOMAINS=*
       - OAUTH2_PROXY_HTTP_ADDRESS=0.0.0.0:4180
       - OAUTH2_PROXY_REDIRECT_URL=http://localhost:4180/oauth2/callback
@@ -87,11 +91,11 @@ services:
       - OAUTH2_PROXY_PASS_USER_HEADERS=true
       - OAUTH2_PROXY_SET_XAUTHREQUEST=true
       - OAUTH2_PROXY_COOKIE_SECURE=false
+      - OAUTH2_PROXY_CODE_CHALLENGE_METHOD=S256
+      - OAUTH2_PROXY_DEBUG=true
     depends_on:
       dex:
         condition: service_healthy
-      api:
-        condition: service_started
 
 volumes:
   postgres_data:
