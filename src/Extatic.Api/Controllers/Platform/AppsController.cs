@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Extatic.Api.Controllers.Platform;
 
 [ApiController]
-[Route("apps")]
+[Route("api/apps")]
 [Authorize(Policy = PolicyNames.PlatformUser)]
 public class AppsController(AppService appService) : ControllerBase
 {

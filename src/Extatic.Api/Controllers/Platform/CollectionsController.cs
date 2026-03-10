@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Extatic.Api.Controllers.Platform;
 
 [ApiController]
-[Route("apps/{app_slug}/collections")]
+[Route("api/apps/{app_slug}/collections")]
 [Authorize(Policy = PolicyNames.AppAnyAccess)]
 public class CollectionsController(CollectionService collectionService) : ControllerBase
 {

@@ -14,7 +14,7 @@ export class AuthService {
 
   loadCurrentUser(): Promise<void> {
     return new Promise(resolve => {
-      this.http.get<User>('/auth/me', { withCredentials: true }).pipe(
+      this.http.get<User>('/api/auth/me', { withCredentials: true }).pipe(
         catchError(() => of(null))
       ).subscribe(user => {
         this.currentUser.set(user);

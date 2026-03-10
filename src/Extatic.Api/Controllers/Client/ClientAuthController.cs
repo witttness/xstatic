@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Extatic.Api.Controllers.Client;
 
 [ApiController]
-[Route("client/auth")]
+[Route("api/client/auth")]
 [Authorize(AuthenticationSchemes = AuthSchemes.ApiKey)]
 public class ClientAuthController(DevTokenService devTokenService, AppUserService appUserService) : ControllerBase
 {

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Extatic.Api.Controllers.Platform;
 
 [ApiController]
-[Route("apps/{app_slug}/webhooks")]
+[Route("api/apps/{app_slug}/webhooks")]
 [Authorize(Policy = PolicyNames.AppOwnerOrAdmin)]
 public class WebhooksController(WebhookService webhookService) : ControllerBase
 {

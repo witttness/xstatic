@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Extatic.Api.Controllers.Platform;
 
 [ApiController]
-[Route("apps/{app_slug}/collaborators")]
+[Route("api/apps/{app_slug}/collaborators")]
 [Authorize(Policy = PolicyNames.AppAnyAccess)]
 public class CollaboratorsController(CollaboratorService collaboratorService) : ControllerBase
 {

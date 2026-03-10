@@ -36,7 +36,7 @@ builder.Services.AddAuthentication(options =>
 .AddPolicyScheme(AuthSchemes.SmartSelector, "Smart Selector", options =>
 {
     options.ForwardDefaultSelector = ctx =>
-        ctx.Request.Path.StartsWithSegments("/client")
+        ctx.Request.Path.StartsWithSegments("/api/client")
             ? AuthSchemes.ApiKey
             : AuthSchemes.OAuthProxy;
 })

@@ -132,3 +132,4 @@
 /Users/danyo/ai/extatic/tests/Extatic.Api.Tests/obj/Debug/net10.0/Extatic.Api.Tests.pdb
 /Users/danyo/ai/extatic/tests/Extatic.Api.Tests/obj/Debug/net10.0/Extatic.Api.Tests.genruntimeconfig.cache
 /Users/danyo/ai/extatic/tests/Extatic.Api.Tests/obj/Debug/net10.0/ref/Extatic.Api.Tests.dll
+/Users/danyo/ai/extatic/tests/Extatic.Api.Tests/obj/Debug/net10.0/Extatic.Api.Tests.sourcelink.json

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Extatic.Api.Controllers.Client;
 
 [ApiController]
-[Route("client/collections/{collection_slug}/items/{item_id}/attachments")]
+[Route("api/client/collections/{collection_slug}/items/{item_id}/attachments")]
 public class ClientAttachmentsController(
     CollectionService collectionService,
     ItemService itemService,

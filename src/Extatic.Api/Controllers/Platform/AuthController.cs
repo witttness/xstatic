@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Extatic.Api.Controllers.Platform;
 
 [ApiController]
-[Route("auth")]
+[Route("api/auth")]
 [Authorize(Policy = PolicyNames.PlatformUser)]
 public class AuthController(AppDbContext db) : ControllerBase
 {
