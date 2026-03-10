@@ -43,7 +43,7 @@ Extatic fills that gap. Define your data shape with JSON Schema, let your users 
 | **Background Jobs** | Hangfire or .NET BackgroundService | Webhook delivery, retries, orphaned storage cleanup |
 | **Frontend** | Angular | Single-page application for the Extatic dashboard |
 | **UI Styling** | Tailwind CSS | Utility-first CSS framework |
-| **Frontend State** | NgRx (optional) | Reactive state management for complex UI flows |
+| **Frontend State** | Angular Signals | Reactive state management via built-in Angular Signals |
 | **Database** | PostgreSQL | Relational store with native JSONB column support |
 | **Hosting** | Azure Container Apps | Containerized deployment for API, OAuth2 Proxy, and dashboard |
 | **Secrets** | Azure Key Vault | Production secrets management |
@@ -70,36 +70,29 @@ extatic/
 │       ├── src/
 │       │   ├── app/
 │       │   │   ├── core/         # Auth guards, interceptors, services
+│       │   │   ├── layout/       # Shell, sidebar, topbar
 │       │   │   ├── shared/       # Shared components, pipes, directives
 │       │   │   ├── features/
 │       │   │   │   ├── apps/     # App CRUD, settings, API key management
 │       │   │   │   ├── collections/  # Collection management, schema editor
-│       │   │   │   ├── items/    # Item browsing and detail views
 │       │   │   │   ├── appusers/ # AppUser listing and details
 │       │   │   │   ├── webhooks/ # Webhook config, delivery logs
-│       │   │   │   └── team/     # Collaborator invitations and roles
+│       │   │   │   └── collaborators/ # Collaborator invitations and roles
 │       │   │   └── app.routes.ts
-│       │   ├── assets/
 │       │   ├── styles.css        # Tailwind CSS imports
 │       │   └── index.html
-│       ├── Dockerfile
+│       ├── proxy.conf.json       # Dev proxy: /api/** → :5001
 │       ├── tailwind.config.js
 │       ├── angular.json
 │       ├── package.json
 │       └── yarn.lock
 │
 ├── infra/
-│   ├── oauth2-proxy/             # OAuth2 Proxy configuration
-│   │   └── oauth2-proxy.cfg
-│   ├── bicep/ or terraform/      # Azure infrastructure-as-code
-│   └── azure-container-apps.yml  # Container Apps deployment manifest
+│   └── oauth2-proxy/             # OAuth2 Proxy + Dex configuration
+│       └── dex-config.yaml
 │
 ├── tests/
-│   ├── Extatic.Api.Tests/        # Unit and integration tests (.NET)
-│   └── extatic-dashboard-e2e/    # E2E tests (Cypress or Playwright)
-│
-├── docs/
-│   └── REQUIREMENTS.md
+│   └── Extatic.Api.Tests/        # Unit and integration tests (.NET)
 ├── README.md
 ├── docker-compose.yml            # Local dev: API + OAuth2 Proxy + PostgreSQL + Azurite
 └── Extatic.sln
@@ -129,15 +122,21 @@ cd extatic
 docker-compose up -d
 ```
 
-This starts the API (.NET 10), OAuth2 Proxy, PostgreSQL, and Azurite (Azure Blob Storage emulator). The dashboard dev server can then be started separately:
+This starts the API (.NET 10), OAuth2 Proxy, Dex (local OIDC provider), PostgreSQL, and Azurite. The dashboard dev server must then be started separately, bound to all interfaces so the oauth2-proxy container can reach it:
 
 ```bash
 cd src/extatic-dashboard
 yarn install
-ng serve
+ng serve --host 0.0.0.0
 ```
 
-The dashboard is available at `http://localhost:4200` and the API at `http://localhost:5001`. OAuth2 Proxy handles login at `http://localhost:4180`.
+| URL | Purpose |
+|---|---|
+| `http://localhost:4180` | Dashboard (authenticated entry point via OAuth2 Proxy) |
+| `http://localhost:5001` | API direct access (no auth, useful for Client API / curl) |
+| `http://localhost:5556/dex` | Dex OIDC issuer |
+
+> **Why `--host 0.0.0.0`?** The `ng serve` dev server binds to `127.0.0.1` by default. The oauth2-proxy container reaches the Angular server via `host.docker.internal`, which resolves to a non-loopback host IP — so Angular must listen on all interfaces.
 
 #### Local authentication (Dex)
 
@@ -148,7 +147,7 @@ A default test user is pre-configured:
 | Field | Value |
 |---|---|
 | Email | `dev@extatic.local` |
-| Password | `password` |
+| Password | `abc123` |
 
 **Adding more test users**
 
@@ -252,14 +251,14 @@ npx playwright test   # or npx cypress run
 ## Architecture Overview
 
 ```
-                    ┌──────────────────────────────────────────────┐
+                    ┌───────────────────────────────────────────────┐
                     │          Azure Container Apps                 │
-                    │                                              │
-┌──────────┐       │  ┌──────────────┐    ┌──────────────────┐    │
-│  Browser  │──────►│  │ OAuth2 Proxy │───►│  Extatic API     │    │
-│ (Angular  │       │  │  (sidecar)   │    │  (.NET 10)       │    │
-│ Dashboard)│       │  └──────────────┘    └────────┬─────────┘    │
-└──────────┘       │                                │              │
+                    │                                               │
+┌───────────┐       │  ┌──────────────┐    ┌──────────────────┐     │
+│  Browser  │──────►│  │ OAuth2 Proxy │───►│  Extatic API     │     │
+│ (Angular  │       │  │  (sidecar)   │    │  (.NET 10)       │     │
+│ Dashboard)│       │  └──────────────┘    └─────────┬────────┘     │
+└───────────┘       │                                │              │
                     └────────────────────────────────┼──────────────┘
                                                      │
                          ┌───────────────────────────┼───────────────┐
@@ -272,18 +271,17 @@ npx playwright test   # or npx cypress run
 ```
 
 ### Entity Model
-```
 
-| Entity | Description |
-|---|---|
-| **User** | A developer who signs up to Extatic and creates Apps. |
-| **App** | A project representing a single static website. |
-| **Collection** | A named group of Items within an App, optionally schema-validated. |
-| **Item** | A JSON document stored in a Collection, owned by an AppUser. |
-| **AppUser** | An end-user of the static site who authenticates via a third-party provider. |
-| **Collaborator** | A membership record granting another User role-based access to an App. |
-| **Webhook** | A subscription that sends HTTP callbacks when events occur in an App. |
-| **Attachment** | A binary file (image, PDF, etc.) linked to an Item. |
+| Entity           | Description                                                                  |
+|------------------|------------------------------------------------------------------------------|
+| **User**.        | A developer who signs up to Extatic and creates Apps.                        |
+| **App**.         | A project representing a single static website.                              |
+| **Collection**   | A named group of Items within an App, optionally schema-validated.           |
+| **Item**         | A JSON document stored in a Collection, owned by an AppUser.                 |
+| **AppUser**      | An end-user of the static site who authenticates via a third-party provider. |
+| **Collaborator** | A membership record granting another User role-based access to an App.       |
+| **Webhook**      | A subscription that sends HTTP callbacks when events occur in an App.        |
+| **Attachment**   | A binary file (image, PDF, etc.) linked to an Item.                          |
 
 ---
 
@@ -296,35 +294,36 @@ Extatic exposes two API surfaces:
 Manage your Apps, Collections, Collaborators, and Webhooks.
 
 ```
-POST   /auth/register
-POST   /auth/login
+GET    /api/auth/me
 
-GET    /apps
-POST   /apps
-GET    /apps/:app_slug
-PUT    /apps/:app_slug
-DELETE /apps/:app_slug
+GET    /api/apps
+POST   /api/apps
+GET    /api/apps/:app_slug
+PUT    /api/apps/:app_slug
+DELETE /api/apps/:app_slug
+POST   /api/apps/:app_slug/api-key/regenerate
 
-GET    /apps/:app_slug/collections
-POST   /apps/:app_slug/collections
-GET    /apps/:app_slug/collections/:col_slug
-PUT    /apps/:app_slug/collections/:col_slug
-DELETE /apps/:app_slug/collections/:col_slug
+GET    /api/apps/:app_slug/collections
+POST   /api/apps/:app_slug/collections
+GET    /api/apps/:app_slug/collections/:col_slug
+PUT    /api/apps/:app_slug/collections/:col_slug
+DELETE /api/apps/:app_slug/collections/:col_slug
 
-GET    /apps/:app_slug/appusers
+GET    /api/apps/:app_slug/appusers
 
-POST   /apps/:app_slug/collaborators
-GET    /apps/:app_slug/collaborators
-PUT    /apps/:app_slug/collaborators/:id
-DELETE /apps/:app_slug/collaborators/:id
-POST   /apps/:app_slug/collaborators/accept
+POST   /api/apps/:app_slug/collaborators
+GET    /api/apps/:app_slug/collaborators
+PUT    /api/apps/:app_slug/collaborators/:id/role
+DELETE /api/apps/:app_slug/collaborators/:id
+POST   /api/apps/:app_slug/collaborators/accept
 
-GET    /apps/:app_slug/webhooks
-POST   /apps/:app_slug/webhooks
-GET    /apps/:app_slug/webhooks/:id
-PUT    /apps/:app_slug/webhooks/:id
-DELETE /apps/:app_slug/webhooks/:id
-GET    /apps/:app_slug/webhooks/:id/logs
+GET    /api/apps/:app_slug/webhooks
+POST   /api/apps/:app_slug/webhooks
+GET    /api/apps/:app_slug/webhooks/:id
+PUT    /api/apps/:app_slug/webhooks/:id
+DELETE /api/apps/:app_slug/webhooks/:id
+GET    /api/apps/:app_slug/webhooks/:id/logs
+POST   /api/apps/:app_slug/webhooks/:id/logs/:log_id/retrigger
 ```
 
 ### Client API (for static sites / AppUsers)
@@ -332,19 +331,18 @@ GET    /apps/:app_slug/webhooks/:id/logs
 Called from your frontend. Handles authentication, CRUD on Items, and file uploads.
 
 ```
-POST   /client/auth/:provider
-GET    /client/auth/:provider/callback
+POST   /api/client/auth/dev/token
 
-GET    /client/collections/:col_slug/items
-POST   /client/collections/:col_slug/items
-GET    /client/collections/:col_slug/items/:id
-PUT    /client/collections/:col_slug/items/:id
-DELETE /client/collections/:col_slug/items/:id
+GET    /api/client/collections/:col_slug/items
+POST   /api/client/collections/:col_slug/items
+GET    /api/client/collections/:col_slug/items/:id
+PUT    /api/client/collections/:col_slug/items/:id
+DELETE /api/client/collections/:col_slug/items/:id
 
-POST   /client/collections/:col_slug/items/:id/attachments
-GET    /client/collections/:col_slug/items/:id/attachments
-GET    /client/collections/:col_slug/items/:id/attachments/:att_id
-DELETE /client/collections/:col_slug/items/:id/attachments/:att_id
+POST   /api/client/collections/:col_slug/items/:id/attachments
+GET    /api/client/collections/:col_slug/items/:id/attachments
+GET    /api/client/collections/:col_slug/items/:id/attachments/:att_id
+DELETE /api/client/collections/:col_slug/items/:id/attachments/:att_id
 ```
 
 ---
@@ -357,7 +355,7 @@ Platform Users authenticate via OAuth2 Proxy (e.g., Google, GitHub, Microsoft). 
 
 ```bash
 # Create an App (session cookie set by OAuth2 Proxy)
-curl -X POST https://api.extatic.io/apps \
+curl -X POST https://api.extatic.io/api/apps \
   -H "Content-Type: application/json" \
   -b "cookie-from-oauth2-proxy" \
   -d '{"name": "My Blog", "slug": "my-blog", "allowed_origins": ["https://myblog.com"]}'
@@ -366,7 +364,7 @@ curl -X POST https://api.extatic.io/apps \
 ### 2. Define a Collection with a schema
 
 ```bash
-curl -X POST https://api.extatic.io/apps/my-blog/collections \
+curl -X POST https://api.extatic.io/api/apps/my-blog/collections \
   -H "Content-Type: application/json" \
   -b "cookie-from-oauth2-proxy" \
   -d '{
@@ -389,7 +387,7 @@ curl -X POST https://api.extatic.io/apps/my-blog/collections \
 
 ```javascript
 // In your frontend JavaScript
-const response = await fetch("https://api.extatic.io/client/collections/comments/items", {
+const response = await fetch("https://api.extatic.io/api/client/collections/comments/items", {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
@@ -428,7 +426,7 @@ Enable attachments on a per-Collection basis by setting `attachments_enabled: tr
 
 ```bash
 # Upload a file to an Item
-curl -X POST https://api.extatic.io/client/collections/photos/items/<item-id>/attachments \
+curl -X POST https://api.extatic.io/api/client/collections/photos/items/<item-id>/attachments \
   -H "X-Api-Key: your-app-api-key" \
   -H "Authorization: Bearer <appuser-token>" \
   -F "file=@photo.jpg"
@@ -451,7 +449,7 @@ Subscribe to events and get HTTP POST callbacks at your URL. Payloads are signed
 **Supported events:** `item.created`, `item.updated`, `item.deleted`, `appuser.created`, `attachment.created`, `attachment.deleted`
 
 ```bash
-curl -X POST https://api.extatic.io/apps/my-blog/webhooks \
+curl -X POST https://api.extatic.io/api/apps/my-blog/webhooks \
   -H "Content-Type: application/json" \
   -b "cookie-from-oauth2-proxy" \
   -d '{
@@ -469,18 +467,18 @@ Failed deliveries are retried with exponential backoff (up to 5 attempts). Deliv
 
 Invite other Extatic users to help manage your App. Each collaborator is assigned a role:
 
-| Role | Collections | Items | Webhooks | Collaborators | App Settings |
-|---|---|---|---|---|---|
-| **owner** | Full | Full | Full | Full | Full |
-| **admin** | Full | Full | Full | Full | Read-only |
-| **editor** | Full | Full | Read-only | Read-only | Read-only |
-| **viewer** | Read | Read | Read | Read | Read |
+| Role       | Collections | Items | Webhooks  | Collaborators | App Settings |
+|------------|-------------|-------|-----------|---------------|--------------|
+| **owner**  | Full        | Full  | Full      | Full          | Full         |
+| **admin**  | Full        | Full  | Full      | Full          | Read-only    |
+| **editor** | Full        | Full  | Read-only | Read-only     | Read-only    |
+| **viewer** | Read        | Read  | Read      | Read          | Read.        |
 
 ---
 
 ## Documentation
 
-For the full project requirements including entity schemas, authorization rules, and non-functional requirements, see [REQUIREMENTS.md](./REQUIREMENTS.md).
+For the full project requirements including entity schemas, authorization rules, and non-functional requirements, see [PROJECT-REQUIREMENTS.md](./PROJECT-REQUIREMENTS.md).
 
 ---
 
