@@ -48,7 +48,12 @@ import { CopyButtonComponent } from '../../../shared/copy-button/copy-button.com
             @for (app of apps(); track app.id) {
               <tr class="border-b border-border hover:bg-surface">
                 <td class="px-4 py-3">
-                  <div class="text-text-primary font-medium">{{ app.name }}</div>
+                  <div class="text-text-primary font-medium">
+                    <a
+                      [routerLink]="['/apps', app.slug, 'collections']"
+                      class=" hover:text-text-primary"
+                    >{{ app.name }}</a>
+                  </div>
                   <div class="font-mono text-xs text-text-muted">{{ app.slug }}</div>
                 </td>
                 <td class="px-4 py-3 text-text-muted text-xs">{{ formatDate(app.created_at) }}</td>

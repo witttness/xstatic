@@ -20,8 +20,12 @@ import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="max-w-lg space-y-5">
         <div>
           <label class="block text-xs font-medium text-text-muted uppercase tracking-wider mb-1">Name</label>
-          <input formControlName="name" type="text"
-            class="w-full bg-background border border-border px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none" />
+          <input 
+            formControlName="name" 
+            type="text"
+            class="w-full bg-background border border-border px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none"
+            placeholder="My Collection"
+            (input)="autoSlug()" />
           @if (form.get('name')?.invalid && form.get('name')?.touched) {
             <p class="text-xs text-error mt-1">Name is required.</p>
           }
@@ -29,8 +33,11 @@ import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading
 
         <div>
           <label class="block text-xs font-medium text-text-muted uppercase tracking-wider mb-1">Slug</label>
-          <input formControlName="slug" type="text"
-            class="w-full bg-background border border-border px-3 py-2 text-sm text-text-primary font-mono focus:border-accent focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed" />
+          <input 
+            formControlName="slug" 
+            type="text"
+            class="w-full bg-background border border-border px-3 py-2 text-sm text-text-primary font-mono focus:border-accent focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+            placeholder="my-collection" />
           @if (form.get('slug')?.invalid && form.get('slug')?.touched) {
             <p class="text-xs text-error mt-1">Slug is required.</p>
           }
@@ -122,6 +129,12 @@ export class CollectionFormComponent implements OnInit {
         error: () => this.loadingCollection.set(false),
       });
     }
+  }
+
+  autoSlug() {
+    const name = this.form.get('name')!.value ?? '';
+    const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    this.form.get('slug')!.setValue(slug, { emitEvent: false });
   }
 
   validateSchema() {
