@@ -13,6 +13,8 @@ public class AppConfiguration : IEntityTypeConfiguration<App>
         builder.Property(a => a.Id).HasDefaultValueSql("gen_random_uuid()");
         builder.Property(a => a.Name).IsRequired().HasMaxLength(256);
         builder.Property(a => a.Slug).IsRequired().HasMaxLength(100);
+        builder.Property(a => a.PublicId).IsRequired().HasMaxLength(24);
+        builder.HasIndex(a => a.PublicId).IsUnique();
         builder.Property(a => a.ApiKeyHash).IsRequired();
         builder.Property(a => a.AllowedOrigins).HasColumnType("text[]");
         builder.Property(a => a.MaxFileSizeMb).HasDefaultValue(10);

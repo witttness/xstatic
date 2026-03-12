@@ -2,6 +2,7 @@ export interface App {
   id: string;
   name: string;
   slug: string;
+  public_id: string;
   allowed_origins: string[];
   max_file_size_mb: number;
   max_attachments_per_item: number;

@@ -6,6 +6,7 @@ public record AppDto(
     Guid Id,
     string Name,
     string Slug,
+    string PublicId,
     string[] AllowedOrigins,
     int MaxFileSizeMb,
     int MaxAttachmentsPerItem,

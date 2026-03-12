@@ -36,6 +36,7 @@ public class AppService(AppDbContext db)
             OwnerId = ownerId,
             Name = name,
             Slug = slug,
+            PublicId = GeneratePublicId(),
             ApiKeyHash = hash
         };
         db.Apps.Add(app);
@@ -67,6 +68,12 @@ public class AppService(AppDbContext db)
         app.ApiKeyHash = hash;
         await db.SaveChangesAsync();
         return rawKey;
+    }
+
+    private static string GeneratePublicId()
+    {
+        var bytes = System.Security.Cryptography.RandomNumberGenerator.GetBytes(8);
+        return $"app_{Convert.ToHexString(bytes).ToLowerInvariant()}";
     }
 
     private static (string RawKey, string Hash) GenerateApiKey()

@@ -16,17 +16,16 @@ public class ApiKeyAuthenticationHandler(
 {
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        var apiKey = Request.Headers["X-Api-Key"].FirstOrDefault();
-        if (string.IsNullOrEmpty(apiKey))
-            return AuthenticateResult.Fail("Missing X-Api-Key header");
+        var publicId = Request.Headers["X-App-Id"].FirstOrDefault();
+        if (string.IsNullOrEmpty(publicId))
+            return AuthenticateResult.Fail("Missing X-App-Id header");
 
         using var scope = scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        var keyHash = ComputeHash(apiKey);
-        var app = await db.Apps.FirstOrDefaultAsync(a => a.ApiKeyHash == keyHash);
+        var app = await db.Apps.FirstOrDefaultAsync(a => a.PublicId == publicId);
         if (app is null)
-            return AuthenticateResult.Fail("Invalid API key");
+            return AuthenticateResult.Fail("Invalid App ID");
 
         Context.Items["CurrentApp"] = app;
 
@@ -38,12 +37,5 @@ public class ApiKeyAuthenticationHandler(
         var identity = new ClaimsIdentity(claims, AuthSchemes.ApiKey);
         var principal = new ClaimsPrincipal(identity);
         return AuthenticateResult.Success(new AuthenticationTicket(principal, AuthSchemes.ApiKey));
-    }
-
-    private static string ComputeHash(string apiKey)
-    {
-        var bytes = System.Security.Cryptography.SHA256.HashData(
-            System.Text.Encoding.UTF8.GetBytes(apiKey));
-        return Convert.ToHexString(bytes).ToLowerInvariant();
     }
 }

@@ -78,9 +78,27 @@ import { CopyButtonComponent } from '../../../shared/copy-button/copy-button.com
 
       <div class="border-t border-border my-6"></div>
 
-      <!-- API Key -->
+      <!-- Public App ID -->
       <section class="mb-8">
-        <h3 class="text-sm font-medium text-text-primary mb-4">API Key</h3>
+        <h3 class="text-sm font-medium text-text-primary mb-1">App ID</h3>
+        <p class="text-xs text-text-muted mb-3">
+          Use this in your static site's JavaScript as the <code class="bg-background border border-border px-1">X-App-Id</code> header.
+          It is a public identifier — safe to commit and embed in client code.
+        </p>
+        <div class="flex items-center gap-2 bg-background border border-border px-3 py-2 max-w-lg">
+          <code class="font-mono text-xs text-text-primary flex-1 break-all">{{ app()!.public_id }}</code>
+          <app-copy-button [value]="app()!.public_id" />
+        </div>
+      </section>
+
+      <div class="border-t border-border my-6"></div>
+
+      <!-- Secret API Key -->
+      <section class="mb-8">
+        <h3 class="text-sm font-medium text-text-primary mb-1">Secret API Key</h3>
+        <p class="text-xs text-text-muted mb-3">
+          For server-side use only (webhooks, admin scripts). Never embed this in client-side code.
+        </p>
         <div class="flex items-center gap-3 mb-4">
           <code class="font-mono text-xs text-text-muted bg-background border border-border px-3 py-2">
             ••••••••••••••••••••••••••••••••

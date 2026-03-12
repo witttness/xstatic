@@ -40,6 +40,7 @@ import { CopyButtonComponent } from '../../../shared/copy-button/copy-button.com
           <thead>
             <tr class="border-b border-border">
               <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Name</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">App ID</th>
               <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Created</th>
               <th class="px-4 py-3"></th>
             </tr>
@@ -55,6 +56,12 @@ import { CopyButtonComponent } from '../../../shared/copy-button/copy-button.com
                     >{{ app.name }}</a>
                   </div>
                   <div class="font-mono text-xs text-text-muted">{{ app.slug }}</div>
+                </td>
+                <td class="px-4 py-3">
+                  <div class="flex items-center gap-2">
+                    <code class="font-mono text-xs text-text-muted">{{ app.public_id }}</code>
+                    <app-copy-button [value]="app.public_id" />
+                  </div>
                 </td>
                 <td class="px-4 py-3 text-text-muted text-xs">{{ formatDate(app.created_at) }}</td>
                 <td class="px-4 py-3 text-right">
@@ -117,13 +124,27 @@ import { CopyButtonComponent } from '../../../shared/copy-button/copy-button.com
         <div class="absolute inset-0 bg-black/60"></div>
         <div class="relative bg-surface border border-border w-full max-w-lg p-6 z-10">
           <h3 class="text-base font-semibold text-text-primary mb-2">App Created</h3>
-          <p class="text-sm text-text-muted mb-4">
-            Copy your API key now. It will not be shown again.
+
+          <!-- Public App ID -->
+          <p class="text-xs font-medium text-text-muted uppercase tracking-wider mb-1">App ID</p>
+          <p class="text-xs text-text-muted mb-2">
+            Safe to embed in client-side code. Always visible in the dashboard.
+          </p>
+          <div class="flex items-center gap-2 bg-background border border-border px-3 py-2 mb-5">
+            <code class="font-mono text-xs text-text-primary flex-1 break-all">{{ newAppPublicId() }}</code>
+            <app-copy-button [value]="newAppPublicId()!" />
+          </div>
+
+          <!-- Secret API Key -->
+          <p class="text-xs font-medium text-text-muted uppercase tracking-wider mb-1">Secret API Key</p>
+          <p class="text-xs text-text-muted mb-2">
+            For server-side use only. Never embed this in client code. Not shown again.
           </p>
           <div class="flex items-center gap-2 bg-background border border-border px-3 py-2 mb-6">
             <code class="font-mono text-xs text-text-primary flex-1 break-all">{{ newApiKey() }}</code>
             <app-copy-button [value]="newApiKey()!" />
           </div>
+
           <div class="flex justify-end">
             <app-button (click)="closeApiKey()">Done</app-button>
           </div>
@@ -145,6 +166,7 @@ export class AppsListComponent implements OnInit {
   creating = signal(false);
   createError = signal<string | null>(null);
   newApiKey = signal<string | null>(null);
+  newAppPublicId = signal<string | null>(null);
   private newAppSlug = '';
 
   createForm = this.fb.group({
@@ -183,6 +205,7 @@ export class AppsListComponent implements OnInit {
         this.creating.set(false);
         this.showCreate = false;
         this.createForm.reset();
+        this.newAppPublicId.set(res.app.public_id);
         this.newApiKey.set(res.api_key);
       },
       error: () => {
@@ -195,6 +218,7 @@ export class AppsListComponent implements OnInit {
   closeApiKey() {
     const slug = this.newAppSlug;
     this.newApiKey.set(null);
+    this.newAppPublicId.set(null);
     this.router.navigate(['/apps', slug, 'collections']);
   }
 

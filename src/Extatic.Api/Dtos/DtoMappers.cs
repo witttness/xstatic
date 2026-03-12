@@ -9,7 +9,7 @@ public static class DtoMappers
         new(u.Id, u.Email, u.Name, u.CreatedAt);
 
     public static AppDto ToDto(this App a) =>
-        new(a.Id, a.Name, a.Slug, a.AllowedOrigins,
+        new(a.Id, a.Name, a.Slug, a.PublicId, a.AllowedOrigins,
             a.MaxFileSizeMb, a.MaxAttachmentsPerItem, a.StorageQuotaGb,
             a.CreatedAt, a.UpdatedAt);
 

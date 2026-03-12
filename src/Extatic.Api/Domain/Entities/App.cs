@@ -6,6 +6,7 @@ public class App
     public Guid OwnerId { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Slug { get; set; } = string.Empty;
+    public string PublicId { get; set; } = string.Empty;
     public string ApiKeyHash { get; set; } = string.Empty;
     public string[] AllowedOrigins { get; set; } = [];
     public int MaxFileSizeMb { get; set; } = 10;
