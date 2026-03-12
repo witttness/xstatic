@@ -1,0 +1,352 @@
+---
+layout: base.njk
+title: Features
+description: Everything Extatic provides — structured collections, user auth, file uploads, webhooks, and team collaboration.
+---
+
+<!-- Page header -->
+<section class="relative py-20 border-b border-zinc-800/50 overflow-hidden">
+  <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(99,102,241,0.10),transparent)]" aria-hidden="true"></div>
+  <div class="relative max-w-6xl mx-auto px-6 text-center">
+    <p class="text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-4">Features</p>
+    <h1 class="text-3xl md:text-4xl font-extrabold text-zinc-50 mb-5 tracking-tight">
+      Built for static sites.<br class="hidden md:block" /> Not for infrastructure teams.
+    </h1>
+    <p class="text-zinc-400 max-w-xl mx-auto">
+      A focused set of primitives — each one designed to solve a specific problem that static site developers face.
+    </p>
+  </div>
+</section>
+
+
+<!-- ===== Collections & Schema ===== -->
+<section class="py-20 max-w-6xl mx-auto px-6">
+  <div class="grid md:grid-cols-2 gap-14 items-start">
+    <div>
+      <div class="w-10 h-10 bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-6">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-indigo-400" aria-hidden="true">
+          <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h2 class="text-xl font-bold text-zinc-50 mb-4">Collections &amp; Schema Validation</h2>
+      <p class="text-zinc-400 leading-relaxed mb-6">
+        A Collection is a named bucket of JSON documents — like a table, but schemaless by default. Add a JSON Schema (draft 2020-12) to enforce shape. Every submission is validated before it's written; failures return a <code class="text-xs bg-zinc-800 px-1 py-0.5 rounded text-zinc-300">422</code> with field-level errors.
+      </p>
+      <ul class="space-y-3 text-sm text-zinc-400 mb-8">
+        <li class="flex items-start gap-3">
+          <svg width="16" height="16" class="text-indigo-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Schemaless by default — start fast, add constraints later
+        </li>
+        <li class="flex items-start gap-3">
+          <svg width="16" height="16" class="text-indigo-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Schema updates apply to future items only — existing data is never invalidated
+        </li>
+        <li class="flex items-start gap-3">
+          <svg width="16" height="16" class="text-indigo-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Filter, sort, and paginate Items from the API
+        </li>
+        <li class="flex items-start gap-3">
+          <svg width="16" height="16" class="text-indigo-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Stored as PostgreSQL JSONB for fast querying
+        </li>
+      </ul>
+    </div>
+    <div class="bg-zinc-900 border border-zinc-800 overflow-hidden">
+      <div class="px-4 py-3 border-b border-zinc-800 text-xs font-mono text-zinc-500">Schema example — <span class="text-zinc-400">comments collection</span></div>
+      <pre class="p-5 text-xs font-mono leading-6 text-zinc-300 overflow-x-auto"><code><span class="tok-punct">{</span>
+  <span class="tok-string">"type"</span><span class="tok-punct">:</span> <span class="tok-string">"object"</span>,
+  <span class="tok-string">"required"</span><span class="tok-punct">:</span> [<span class="tok-string">"text"</span>, <span class="tok-string">"author"</span>],
+  <span class="tok-string">"additionalProperties"</span><span class="tok-punct">:</span> <span class="tok-keyword">false</span>,
+  <span class="tok-string">"properties"</span><span class="tok-punct">:</span> <span class="tok-punct">{</span>
+    <span class="tok-string">"text"</span><span class="tok-punct">:</span> <span class="tok-punct">{</span>
+      <span class="tok-string">"type"</span><span class="tok-punct">:</span> <span class="tok-string">"string"</span>,
+      <span class="tok-string">"maxLength"</span><span class="tok-punct">:</span> <span class="tok-num">1000</span>
+    <span class="tok-punct">}</span>,
+    <span class="tok-string">"author"</span><span class="tok-punct">:</span> <span class="tok-punct">{</span>
+      <span class="tok-string">"type"</span><span class="tok-punct">:</span> <span class="tok-string">"string"</span>
+    <span class="tok-punct">}</span>,
+    <span class="tok-string">"rating"</span><span class="tok-punct">:</span> <span class="tok-punct">{</span>
+      <span class="tok-string">"type"</span><span class="tok-punct">:</span> <span class="tok-string">"integer"</span>,
+      <span class="tok-string">"minimum"</span><span class="tok-punct">:</span> <span class="tok-num">1</span>,
+      <span class="tok-string">"maximum"</span><span class="tok-punct">:</span> <span class="tok-num">5</span>
+    <span class="tok-punct">}</span>
+  <span class="tok-punct">}</span>
+<span class="tok-punct">}</span>
+</code></pre>
+    </div>
+  </div>
+</section>
+
+<hr class="border-zinc-800/50 max-w-6xl mx-auto" />
+
+<!-- ===== AppUser Auth ===== -->
+<section class="py-20 max-w-6xl mx-auto px-6">
+  <div class="grid md:grid-cols-2 gap-14 items-start">
+    <div class="order-2 md:order-1 bg-zinc-900 border border-zinc-800 overflow-hidden">
+      <div class="px-4 py-3 border-b border-zinc-800 text-xs font-mono text-zinc-500">Initiate OAuth login from your site</div>
+      <pre class="p-5 text-xs font-mono leading-6 text-zinc-300 overflow-x-auto"><code><span class="tok-comment">// Redirect user to provider login</span>
+<span class="tok-keyword">function</span> <span class="tok-fn">loginWithGitHub</span>() {
+  <span class="tok-keyword">const</span> url = <span class="tok-keyword">new</span> <span class="tok-fn">URL</span>(
+    <span class="tok-string">'https://api.extatic.io'</span>
+      + <span class="tok-string">'/api/client/auth/github'</span>
+  );
+  url.searchParams.<span class="tok-fn">set</span>(<span class="tok-string">'app_id'</span>, MY_APP_ID);
+  url.searchParams.<span class="tok-fn">set</span>(
+    <span class="tok-string">'redirect_uri'</span>,
+    window.location.href,
+  );
+  window.location.href = url.<span class="tok-fn">toString</span>();
+}
+
+<span class="tok-comment">// On return, grab the token from params</span>
+<span class="tok-keyword">const</span> params = <span class="tok-keyword">new</span> <span class="tok-fn">URLSearchParams</span>(
+  window.location.search
+);
+<span class="tok-keyword">const</span> token = params.<span class="tok-fn">get</span>(<span class="tok-string">'token'</span>);
+</code></pre>
+    </div>
+    <div class="order-1 md:order-2">
+      <div class="w-10 h-10 bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-6">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-indigo-400" aria-hidden="true">
+          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h2 class="text-xl font-bold text-zinc-50 mb-4">AppUser Authentication</h2>
+      <p class="text-zinc-400 leading-relaxed mb-6">
+        Your site's visitors are AppUsers. Extatic handles the OAuth 2.0 / OpenID Connect flow with Google, GitHub, and Facebook — then issues a JWT scoped to your App. You never store passwords or manage tokens.
+      </p>
+      <ul class="space-y-3 text-sm text-zinc-400">
+        <li class="flex items-start gap-3">
+          <svg width="16" height="16" class="text-indigo-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Providers: Google, GitHub, Facebook (more coming)
+        </li>
+        <li class="flex items-start gap-3">
+          <svg width="16" height="16" class="text-indigo-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          AppUsers are auto-created on first login and upserted on subsequent logins
+        </li>
+        <li class="flex items-start gap-3">
+          <svg width="16" height="16" class="text-indigo-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          AppUsers own their Items — only they can edit or delete their data by default
+        </li>
+        <li class="flex items-start gap-3">
+          <svg width="16" height="16" class="text-indigo-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Platform owner and admins can override any AppUser's data
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<hr class="border-zinc-800/50 max-w-6xl mx-auto" />
+
+<!-- ===== File Attachments ===== -->
+<section class="py-20 max-w-6xl mx-auto px-6">
+  <div class="grid md:grid-cols-2 gap-14 items-start">
+    <div>
+      <div class="w-10 h-10 bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-6">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-indigo-400" aria-hidden="true">
+          <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h2 class="text-xl font-bold text-zinc-50 mb-4">File Attachments</h2>
+      <p class="text-zinc-400 leading-relaxed mb-6">
+        Enable file uploads per Collection. Attachments are stored in Azure Blob Storage and served via CDN. Configure MIME types, max file size, and max count per Item — all from the dashboard.
+      </p>
+
+      <!-- Limits table -->
+      <div class="border border-zinc-800 overflow-hidden mb-6">
+        <table class="w-full text-xs">
+          <thead>
+            <tr class="border-b border-zinc-800 bg-zinc-900/60">
+              <th class="px-4 py-2 text-left font-medium text-zinc-400 uppercase tracking-wider">Setting</th>
+              <th class="px-4 py-2 text-left font-medium text-zinc-400 uppercase tracking-wider">Scope</th>
+              <th class="px-4 py-2 text-left font-medium text-zinc-400 uppercase tracking-wider">Default</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-zinc-800">
+            <tr class="bg-zinc-950">
+              <td class="px-4 py-2.5 font-mono text-zinc-300">attachments_enabled</td>
+              <td class="px-4 py-2.5 text-zinc-500">Per Collection</td>
+              <td class="px-4 py-2.5 text-zinc-500">false</td>
+            </tr>
+            <tr class="bg-zinc-950">
+              <td class="px-4 py-2.5 font-mono text-zinc-300">allowed_mime_types</td>
+              <td class="px-4 py-2.5 text-zinc-500">Per Collection</td>
+              <td class="px-4 py-2.5 text-zinc-500">All types</td>
+            </tr>
+            <tr class="bg-zinc-950">
+              <td class="px-4 py-2.5 font-mono text-zinc-300">max_file_size</td>
+              <td class="px-4 py-2.5 text-zinc-500">Per App</td>
+              <td class="px-4 py-2.5 text-zinc-500">10 MB</td>
+            </tr>
+            <tr class="bg-zinc-950">
+              <td class="px-4 py-2.5 font-mono text-zinc-300">max_attachments</td>
+              <td class="px-4 py-2.5 text-zinc-500">Per Item</td>
+              <td class="px-4 py-2.5 text-zinc-500">10</td>
+            </tr>
+            <tr class="bg-zinc-950">
+              <td class="px-4 py-2.5 font-mono text-zinc-300">storage_quota</td>
+              <td class="px-4 py-2.5 text-zinc-500">Per App</td>
+              <td class="px-4 py-2.5 text-zinc-500">1 GB</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="bg-zinc-900 border border-zinc-800 overflow-hidden">
+      <div class="px-4 py-3 border-b border-zinc-800 text-xs font-mono text-zinc-500">Upload an attachment</div>
+      <pre class="p-5 text-xs font-mono leading-6 text-zinc-300 overflow-x-auto"><code><span class="tok-keyword">const</span> form = <span class="tok-keyword">new</span> <span class="tok-fn">FormData</span>();
+form.<span class="tok-fn">append</span>(<span class="tok-string">'file'</span>, fileInput.files[<span class="tok-num">0</span>]);
+
+<span class="tok-keyword">const</span> res = <span class="tok-keyword">await</span> <span class="tok-fn">fetch</span>(
+  <span class="tok-string">`/api/client/collections/photos`</span>
+    + <span class="tok-string">`/items/<span class="tok-punct">${</span>itemId<span class="tok-punct">}</span>/attachments`</span>,
+  {
+    method<span class="tok-punct">:</span> <span class="tok-string">'POST'</span>,
+    headers<span class="tok-punct">:</span> {
+      <span class="tok-string">'X-App-Id'</span><span class="tok-punct">:</span> MY_APP_ID,
+      <span class="tok-string">'Authorization'</span><span class="tok-punct">:</span> <span class="tok-string">`Bearer <span class="tok-punct">${</span>token<span class="tok-punct">}</span>`</span>,
+    },
+    body<span class="tok-punct">:</span> form,
+  }
+);
+
+<span class="tok-comment">// Response includes a CDN URL</span>
+<span class="tok-keyword">const</span> { attachment } = <span class="tok-keyword">await</span> res.<span class="tok-fn">json</span>();
+console.<span class="tok-fn">log</span>(attachment.url);
+<span class="tok-comment">// → "https://cdn.extatic.io/..."</span>
+</code></pre>
+    </div>
+  </div>
+</section>
+
+<hr class="border-zinc-800/50 max-w-6xl mx-auto" />
+
+<!-- ===== Webhooks ===== -->
+<section class="py-20 max-w-6xl mx-auto px-6">
+  <div class="grid md:grid-cols-2 gap-14 items-start">
+    <div class="order-2 md:order-1 space-y-4">
+      <!-- Event types -->
+      <div class="border border-zinc-800 bg-zinc-900 p-5">
+        <p class="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-3">Supported Events</p>
+        <div class="flex flex-wrap gap-2">
+          {%- for evt in ["item.created", "item.updated", "item.deleted", "appuser.created", "attachment.created", "attachment.deleted"] %}
+            <code class="text-xs bg-zinc-800 border border-zinc-700 text-zinc-300 px-2 py-0.5 rounded font-mono">{{ evt }}</code>
+          {%- endfor %}
+        </div>
+      </div>
+      <!-- Retry timeline -->
+      <div class="border border-zinc-800 bg-zinc-900 p-5">
+        <p class="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-3">Retry Schedule</p>
+        <ol class="text-sm text-zinc-500 space-y-1.5 font-mono">
+          <li><span class="text-zinc-400">1.</span> Immediate</li>
+          <li><span class="text-zinc-400">2.</span> +1 minute</li>
+          <li><span class="text-zinc-400">3.</span> +5 minutes</li>
+          <li><span class="text-zinc-400">4.</span> +30 minutes</li>
+          <li><span class="text-zinc-400">5.</span> +2 hours</li>
+          <li><span class="text-zinc-400">6.</span> +12 hours → auto-deactivate</li>
+        </ol>
+      </div>
+    </div>
+    <div class="order-1 md:order-2">
+      <div class="w-10 h-10 bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-6">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-indigo-400" aria-hidden="true">
+          <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h2 class="text-xl font-bold text-zinc-50 mb-4">Webhooks</h2>
+      <p class="text-zinc-400 leading-relaxed mb-6">
+        Subscribe any HTTP endpoint to Extatic events. Every delivery is signed with HMAC-SHA256 so you can verify the payload came from Extatic. Failed deliveries retry automatically with exponential backoff.
+      </p>
+      <ul class="space-y-3 text-sm text-zinc-400">
+        <li class="flex items-start gap-3">
+          <svg width="16" height="16" class="text-indigo-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          HMAC-SHA256 signature on every payload (<code class="text-xs bg-zinc-800 px-1 rounded text-zinc-300">X-Extatic-Signature</code>)
+        </li>
+        <li class="flex items-start gap-3">
+          <svg width="16" height="16" class="text-indigo-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          7-day delivery logs with full request/response details
+        </li>
+        <li class="flex items-start gap-3">
+          <svg width="16" height="16" class="text-indigo-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Manually re-trigger any delivery from the dashboard
+        </li>
+        <li class="flex items-start gap-3">
+          <svg width="16" height="16" class="text-indigo-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Auto-deactivation + owner notification after exhausted retries
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<hr class="border-zinc-800/50 max-w-6xl mx-auto" />
+
+<!-- ===== Team Collaboration ===== -->
+<section class="py-20 max-w-6xl mx-auto px-6">
+  <div class="grid md:grid-cols-2 gap-14 items-start">
+    <div>
+      <div class="w-10 h-10 bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-6">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-indigo-400" aria-hidden="true">
+          <path d="M12 5a3 3 0 100 6 3 3 0 000-6zM3 17v-1a4 4 0 014-4h10a4 4 0 014 4v1" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h2 class="text-xl font-bold text-zinc-50 mb-4">Team Collaboration</h2>
+      <p class="text-zinc-400 leading-relaxed mb-6">
+        Share App management with your team using role-based access. Invite by email — collaborators receive an invitation they must accept before accessing anything.
+      </p>
+    </div>
+    <div class="border border-zinc-800 overflow-hidden">
+      <table class="w-full text-xs">
+        <thead>
+          <tr class="border-b border-zinc-800 bg-zinc-900/60">
+            <th class="px-4 py-2 text-left font-medium text-zinc-400 uppercase tracking-wider">Capability</th>
+            <th class="px-4 py-2 text-center font-medium text-zinc-400 uppercase tracking-wider">Owner</th>
+            <th class="px-4 py-2 text-center font-medium text-zinc-400 uppercase tracking-wider">Admin</th>
+            <th class="px-4 py-2 text-center font-medium text-zinc-400 uppercase tracking-wider">Editor</th>
+            <th class="px-4 py-2 text-center font-medium text-zinc-400 uppercase tracking-wider">Viewer</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-zinc-800">
+          {%- set rows = [
+            ["Manage Collections", true, true, true, false],
+            ["View Items",         true, true, true, true],
+            ["Manage Webhooks",    true, true, false, false],
+            ["Manage Collaborators", true, true, false, false],
+            ["Delete App",         true, false, false, false]
+          ] %}
+          {%- for row in rows %}
+            <tr class="bg-zinc-950">
+              <td class="px-4 py-2.5 text-zinc-300">{{ row[0] }}</td>
+              {%- for val in [row[1], row[2], row[3], row[4]] %}
+                <td class="px-4 py-2.5 text-center">
+                  {%- if val %}
+                    <svg width="14" height="14" class="text-indigo-400 mx-auto" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  {%- else %}
+                    <svg width="14" height="14" class="text-zinc-700 mx-auto" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  {%- endif %}
+                </td>
+              {%- endfor %}
+            </tr>
+          {%- endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+
+<!-- CTA -->
+<section class="py-20 bg-zinc-900/30 border-t border-zinc-800/50 text-center">
+  <div class="max-w-xl mx-auto px-6">
+    <h2 class="text-2xl font-bold text-zinc-50 mb-4">Ready to add a backend?</h2>
+    <p class="text-zinc-400 mb-8">Free to start. No credit card required.</p>
+    <a href="https://app.extatic.io/signup"
+       class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-6 py-3 transition-colors">
+      Get Started Free
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+  </div>
+</section>

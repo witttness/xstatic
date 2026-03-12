@@ -1,0 +1,402 @@
+---
+layout: base.njk
+title: The backend for your static site
+description: Add structured data, user auth, file uploads, and webhooks to any static site — no server required.
+---
+
+<!-- ===== HERO ===== -->
+<section class="relative overflow-hidden py-24 md:py-32">
+  <!-- Subtle radial glow -->
+  <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(99,102,241,0.13),transparent)]" aria-hidden="true"></div>
+
+  <div class="relative max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-14 items-center">
+
+    <!-- Left: headline + CTAs -->
+    <div>
+      <div class="inline-flex items-center gap-2 border border-indigo-500/30 bg-indigo-500/10 rounded-full px-3 py-1 text-xs font-medium text-indigo-400 mb-7">
+        <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
+        Now in beta
+      </div>
+
+      <h1 class="text-4xl md:text-5xl lg:text-[3.5rem] font-extrabold text-zinc-50 leading-[1.08] tracking-tight mb-6">
+        The backend for<br />your static site.
+      </h1>
+
+      <p class="text-lg text-zinc-400 leading-relaxed mb-8 max-w-md">
+        Add structured data, user auth, file uploads, and webhooks to any static site — no server required.
+      </p>
+
+      <div class="flex flex-wrap gap-3">
+        <a href="https://app.extatic.io/signup"
+           class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-5 py-2.5 transition-colors">
+          Get Started Free
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+        <a href="/docs"
+           class="inline-flex items-center gap-2 border border-zinc-700 hover:border-zinc-500 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 text-sm font-medium px-5 py-2.5 transition-colors">
+          Read the Docs
+        </a>
+      </div>
+
+      <p class="mt-4 text-xs text-zinc-600">Free to start — no credit card required.</p>
+    </div>
+
+    <!-- Right: terminal code snippet -->
+    <div class="bg-zinc-900 border border-zinc-800 overflow-hidden shadow-2xl shadow-black/40">
+      <!-- Window chrome -->
+      <div class="flex items-center gap-1.5 px-4 py-3 border-b border-zinc-800 bg-zinc-900/70">
+        <span class="w-2.5 h-2.5 rounded-full bg-red-500/60"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-yellow-500/60"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-green-500/60"></span>
+        <span class="ml-3 text-xs text-zinc-500 font-mono">post-comment.js</span>
+      </div>
+      <!-- Code -->
+      <pre class="p-5 text-xs font-mono leading-6 text-zinc-300 overflow-x-auto"><code><span class="tok-comment">// Add a comment to your static blog</span>
+<span class="tok-keyword">const</span> res = <span class="tok-keyword">await</span> <span class="tok-fn">fetch</span>(
+  <span class="tok-string">'https://api.extatic.io/api/client'</span>
+    + <span class="tok-string">'/collections/comments/items'</span>,
+  {
+    method<span class="tok-punct">:</span> <span class="tok-string">'POST'</span>,
+    headers<span class="tok-punct">:</span> {
+      <span class="tok-string">'X-App-Id'</span><span class="tok-punct">:</span> MY_APP_ID,
+      <span class="tok-string">'Authorization'</span><span class="tok-punct">:</span> <span class="tok-string">`Bearer <span class="tok-punct">${</span>session.token<span class="tok-punct">}</span>`</span>,
+      <span class="tok-string">'Content-Type'</span><span class="tok-punct">:</span> <span class="tok-string">'application/json'</span>,
+    },
+    body<span class="tok-punct">:</span> <span class="tok-fn">JSON.stringify</span>({
+      text<span class="tok-punct">:</span>   commentText,
+      author<span class="tok-punct">:</span> session.user.name,
+    }),
+  }
+);
+
+<span class="tok-keyword">const</span> { item } = <span class="tok-keyword">await</span> res.<span class="tok-fn">json</span>();
+<span class="tok-comment">// → { id, text, author, created_at }</span>
+</code></pre>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ===== FRAMEWORK COMPATIBILITY STRIP ===== -->
+<section class="border-y border-zinc-800/50 bg-zinc-900/30 py-6">
+  <div class="max-w-6xl mx-auto px-6">
+    <p class="text-center text-xs font-medium text-zinc-500 uppercase tracking-widest mb-6">
+      Works with any static site framework
+    </p>
+    <div class="flex flex-wrap items-center justify-center gap-8 md:gap-12">
+      <span class="text-sm font-semibold text-zinc-500 hover:text-zinc-300 transition-colors cursor-default">Next.js</span>
+      <span class="text-sm font-semibold text-zinc-500 hover:text-zinc-300 transition-colors cursor-default">Astro</span>
+      <span class="text-sm font-semibold text-zinc-500 hover:text-zinc-300 transition-colors cursor-default">Hugo</span>
+      <span class="text-sm font-semibold text-zinc-500 hover:text-zinc-300 transition-colors cursor-default">Eleventy</span>
+      <span class="text-sm font-semibold text-zinc-500 hover:text-zinc-300 transition-colors cursor-default">SvelteKit</span>
+      <span class="text-sm font-semibold text-zinc-500 hover:text-zinc-300 transition-colors cursor-default">Nuxt</span>
+      <span class="text-sm font-semibold text-zinc-500 hover:text-zinc-300 transition-colors cursor-default">Plain HTML</span>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===== THE PROBLEM ===== -->
+<section class="py-24 max-w-6xl mx-auto px-6">
+  <div class="text-center mb-14">
+    <h2 class="text-2xl md:text-3xl font-bold text-zinc-50 mb-4">
+      Static sites shouldn't need a server<br class="hidden md:block" /> just to save data.
+    </h2>
+    <p class="text-zinc-400 max-w-xl mx-auto">
+      The ecosystem made frontend development beautifully simple. The backend didn't get the memo.
+    </p>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-px bg-zinc-800">
+    <!-- Pain 1 -->
+    <div class="bg-zinc-950 p-8">
+      <div class="w-9 h-9 bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-5">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-red-400" aria-hidden="true">
+          <path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h3 class="text-base font-semibold text-zinc-100 mb-2">Spinning up a server is overkill</h3>
+      <p class="text-sm text-zinc-500 leading-relaxed">
+        Running Express or Django just to store a contact form submission burns hours on infrastructure you didn't want.
+      </p>
+    </div>
+    <!-- Pain 2 -->
+    <div class="bg-zinc-950 p-8">
+      <div class="w-9 h-9 bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-5">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-red-400" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12 8v4m0 4h.01" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h3 class="text-base font-semibold text-zinc-100 mb-2">BaaS platforms are too complex</h3>
+      <p class="text-sm text-zinc-500 leading-relaxed">
+        Firebase, Supabase, and Hasura are powerful — but learning a new paradigm just to persist a few records is painful.
+      </p>
+    </div>
+    <!-- Pain 3 -->
+    <div class="bg-zinc-950 p-8">
+      <div class="w-9 h-9 bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-5">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-red-400" aria-hidden="true">
+          <path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h3 class="text-base font-semibold text-zinc-100 mb-2">Form services don't let you query</h3>
+      <p class="text-sm text-zinc-500 leading-relaxed">
+        Formspree and Typeform accept submissions, but you can't filter, sort, or build a product on top of unstructured email inboxes.
+      </p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===== HOW IT WORKS ===== -->
+<section class="py-24 bg-zinc-900/30 border-y border-zinc-800/50">
+  <div class="max-w-6xl mx-auto px-6">
+
+    <div class="text-center mb-16">
+      <h2 class="text-2xl md:text-3xl font-bold text-zinc-50 mb-4">Up and running in minutes</h2>
+      <p class="text-zinc-400 max-w-lg mx-auto">Three steps from zero to a queryable, validated, authenticated data API.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8 relative">
+
+      <!-- Step 1 -->
+      <div class="relative">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="text-3xl font-extrabold text-indigo-600/40 font-mono leading-none">01</span>
+        </div>
+        <h3 class="text-base font-semibold text-zinc-100 mb-3">Register an App</h3>
+        <p class="text-sm text-zinc-500 leading-relaxed mb-5">
+          Sign in, create a project, and receive a secret API key. Configure allowed origins for CORS in two clicks.
+        </p>
+        <div class="bg-zinc-900 border border-zinc-800 p-4 font-mono text-xs text-zinc-400">
+          <span class="text-zinc-600">$ </span>curl -X POST https://api.extatic.io<span class="tok-string">/api/apps</span> \<br />
+          &nbsp;&nbsp;-H <span class="tok-string">"Authorization: Bearer $TOKEN"</span> \<br />
+          &nbsp;&nbsp;-d <span class="tok-string">'{"name":"My Blog","slug":"my-blog"}'</span>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="relative">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="text-3xl font-extrabold text-indigo-600/40 font-mono leading-none">02</span>
+        </div>
+        <h3 class="text-base font-semibold text-zinc-100 mb-3">Define a Collection</h3>
+        <p class="text-sm text-zinc-500 leading-relaxed mb-5">
+          Name your collection and optionally attach a JSON Schema. Invalid payloads are rejected before they touch the database.
+        </p>
+        <div class="bg-zinc-900 border border-zinc-800 p-4 font-mono text-xs text-zinc-400 overflow-x-auto">
+          <span class="tok-punct">{</span><br />
+          &nbsp;&nbsp;<span class="tok-string">"name"</span><span class="tok-punct">:</span> <span class="tok-string">"comments"</span>,<br />
+          &nbsp;&nbsp;<span class="tok-string">"schema"</span><span class="tok-punct">:</span> <span class="tok-punct">{</span><br />
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-string">"required"</span><span class="tok-punct">:</span> [<span class="tok-string">"text"</span>, <span class="tok-string">"author"</span>],<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-string">"properties"</span><span class="tok-punct">:</span> <span class="tok-punct">{ ... }</span><br />
+          &nbsp;&nbsp;<span class="tok-punct">}</span><br />
+          <span class="tok-punct">}</span>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="relative">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="text-3xl font-extrabold text-indigo-600/40 font-mono leading-none">03</span>
+        </div>
+        <h3 class="text-base font-semibold text-zinc-100 mb-3">Call the API</h3>
+        <p class="text-sm text-zinc-500 leading-relaxed mb-5">
+          POST, GET, PUT, DELETE — from your static site's JavaScript. No SDK required, just fetch.
+        </p>
+        <div class="bg-zinc-900 border border-zinc-800 p-4 font-mono text-xs text-zinc-400">
+          <span class="tok-keyword">const</span> items = <span class="tok-keyword">await</span> <span class="tok-fn">fetch</span>(<br />
+          &nbsp;&nbsp;<span class="tok-string">'/api/client/collections'</span><br />
+          &nbsp;&nbsp;+ <span class="tok-string">'/comments/items'</span>,<br />
+          &nbsp;&nbsp;<span class="tok-punct">{</span> headers<span class="tok-punct">:</span> <span class="tok-punct">{</span> ... <span class="tok-punct">}</span> <span class="tok-punct">}</span><br />
+          ).<span class="tok-fn">then</span>(r <span class="tok-punct">=&gt;</span> r.<span class="tok-fn">json</span>());
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ===== FEATURES ===== -->
+<section class="py-24 max-w-6xl mx-auto px-6">
+
+  <div class="text-center mb-16">
+    <h2 class="text-2xl md:text-3xl font-bold text-zinc-50 mb-4">Everything you need. Nothing you don't.</h2>
+    <p class="text-zinc-400 max-w-xl mx-auto">
+      Extatic bundles the backend primitives static sites actually need — without making you learn a new paradigm.
+    </p>
+  </div>
+
+  <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-zinc-800">
+
+    <!-- Collections -->
+    <div class="bg-zinc-950 p-8 hover:bg-zinc-900/60 transition-colors group">
+      <div class="w-10 h-10 bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-5 group-hover:border-indigo-500/40 transition-colors">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-indigo-400" aria-hidden="true">
+          <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h3 class="text-base font-semibold text-zinc-100 mb-2">Structured Collections</h3>
+      <p class="text-sm text-zinc-500 leading-relaxed">
+        Name your data buckets and attach a JSON Schema (draft 2020-12). Invalid submissions are rejected with field-level errors before they reach the database.
+      </p>
+    </div>
+
+    <!-- AppUser Auth -->
+    <div class="bg-zinc-950 p-8 hover:bg-zinc-900/60 transition-colors group">
+      <div class="w-10 h-10 bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-5 group-hover:border-indigo-500/40 transition-colors">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-indigo-400" aria-hidden="true">
+          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h3 class="text-base font-semibold text-zinc-100 mb-2">AppUser Auth</h3>
+      <p class="text-sm text-zinc-500 leading-relaxed">
+        Let your visitors sign in with Google, GitHub, or Facebook. Extatic manages the OAuth flow and issues an App-scoped JWT. You never touch a password.
+      </p>
+    </div>
+
+    <!-- File Attachments -->
+    <div class="bg-zinc-950 p-8 hover:bg-zinc-900/60 transition-colors group">
+      <div class="w-10 h-10 bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-5 group-hover:border-indigo-500/40 transition-colors">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-indigo-400" aria-hidden="true">
+          <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h3 class="text-base font-semibold text-zinc-100 mb-2">File Attachments</h3>
+      <p class="text-sm text-zinc-500 leading-relaxed">
+        Upload images, PDFs, and media — stored on Azure Blob Storage and served via CDN. Configure allowed MIME types and limits per Collection.
+      </p>
+    </div>
+
+    <!-- Webhooks -->
+    <div class="bg-zinc-950 p-8 hover:bg-zinc-900/60 transition-colors group">
+      <div class="w-10 h-10 bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-5 group-hover:border-indigo-500/40 transition-colors">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-indigo-400" aria-hidden="true">
+          <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h3 class="text-base font-semibold text-zinc-100 mb-2">Webhooks</h3>
+      <p class="text-sm text-zinc-500 leading-relaxed">
+        Subscribe to events like <code class="text-xs bg-zinc-800 px-1 py-0.5 rounded text-zinc-300">item.created</code> or <code class="text-xs bg-zinc-800 px-1 py-0.5 rounded text-zinc-300">appuser.created</code>. HMAC-signed payloads, exponential-backoff retries, 7-day delivery logs.
+      </p>
+    </div>
+
+    <!-- Security -->
+    <div class="bg-zinc-950 p-8 hover:bg-zinc-900/60 transition-colors group">
+      <div class="w-10 h-10 bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-5 group-hover:border-indigo-500/40 transition-colors">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-indigo-400" aria-hidden="true">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h3 class="text-base font-semibold text-zinc-100 mb-2">CORS &amp; API Keys</h3>
+      <p class="text-sm text-zinc-500 leading-relaxed">
+        Allowlist your domains per App. Rotate API keys any time. Rate limiting on all endpoints. No cross-origin surprises in production.
+      </p>
+    </div>
+
+    <!-- Team -->
+    <div class="bg-zinc-950 p-8 hover:bg-zinc-900/60 transition-colors group">
+      <div class="w-10 h-10 bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-5 group-hover:border-indigo-500/40 transition-colors">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-indigo-400" aria-hidden="true">
+          <path d="M12 5a3 3 0 100 6 3 3 0 000-6zM3 17v-1a4 4 0 014-4h10a4 4 0 014 4v1" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h3 class="text-base font-semibold text-zinc-100 mb-2">Team Collaboration</h3>
+      <p class="text-sm text-zinc-500 leading-relaxed">
+        Invite teammates as <strong class="text-zinc-400">admin</strong>, <strong class="text-zinc-400">editor</strong>, or <strong class="text-zinc-400">viewer</strong>. Invitation-based access — collaborators accept before gaining any permissions.
+      </p>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ===== WEBHOOK EXAMPLE ===== -->
+<section class="py-24 bg-zinc-900/30 border-y border-zinc-800/50">
+  <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-14 items-center">
+
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-4">Webhooks</p>
+      <h2 class="text-2xl md:text-3xl font-bold text-zinc-50 mb-5 leading-snug">
+        React to your data.<br />Anywhere you want.
+      </h2>
+      <p class="text-zinc-400 leading-relaxed mb-6">
+        When a user submits a form, fires a webhook to Slack. When a new AppUser signs up, trigger a welcome email via Sendgrid. When an item is deleted, purge a CDN cache. All with a verified HMAC signature so you know the payload is real.
+      </p>
+      <ul class="space-y-3 text-sm text-zinc-400">
+        <li class="flex items-start gap-3">
+          <svg width="16" height="16" class="text-indigo-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Exponential backoff: 1 min → 5 min → 30 min → 2 hr → 12 hr
+        </li>
+        <li class="flex items-start gap-3">
+          <svg width="16" height="16" class="text-indigo-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          7-day delivery logs with manual re-trigger
+        </li>
+        <li class="flex items-start gap-3">
+          <svg width="16" height="16" class="text-indigo-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Auto-deactivation + owner notification after repeated failures
+        </li>
+      </ul>
+    </div>
+
+    <div class="bg-zinc-900 border border-zinc-800 overflow-hidden">
+      <div class="flex items-center gap-1.5 px-4 py-3 border-b border-zinc-800">
+        <span class="w-2.5 h-2.5 rounded-full bg-red-500/60"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-yellow-500/60"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-green-500/60"></span>
+        <span class="ml-3 text-xs text-zinc-500 font-mono">verify-webhook.js</span>
+      </div>
+      <pre class="p-5 text-xs font-mono leading-6 text-zinc-300 overflow-x-auto"><code><span class="tok-keyword">import</span> crypto <span class="tok-keyword">from</span> <span class="tok-string">'node:crypto'</span>;
+
+<span class="tok-keyword">export function</span> <span class="tok-fn">verifyWebhook</span>(req, secret) {
+  <span class="tok-keyword">const</span> sig = req.headers[
+    <span class="tok-string">'x-extatic-signature'</span>
+  ];
+  <span class="tok-keyword">const</span> expected = crypto
+    .<span class="tok-fn">createHmac</span>(<span class="tok-string">'sha256'</span>, secret)
+    .<span class="tok-fn">update</span>(req.rawBody)
+    .<span class="tok-fn">digest</span>(<span class="tok-string">'hex'</span>);
+
+  <span class="tok-keyword">return</span> crypto.<span class="tok-fn">timingSafeEqual</span>(
+    <span class="tok-fn">Buffer.from</span>(sig),
+    <span class="tok-fn">Buffer.from</span>(expected),
+  );
+}
+</code></pre>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ===== CTA BANNER ===== -->
+<section class="py-28 max-w-6xl mx-auto px-6 text-center">
+  <div class="relative">
+    <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_80%_at_50%_50%,rgba(99,102,241,0.08),transparent)]" aria-hidden="true"></div>
+    <p class="text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-5">Ready to ship?</p>
+    <h2 class="text-3xl md:text-4xl font-extrabold text-zinc-50 mb-5 tracking-tight">
+      Add a backend to your static site today.
+    </h2>
+    <p class="text-zinc-400 mb-8 max-w-md mx-auto">
+      Free to start. No credit card required. Your first App is up in under five minutes.
+    </p>
+    <div class="flex flex-wrap items-center justify-center gap-3">
+      <a href="https://app.extatic.io/signup"
+         class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-6 py-3 transition-colors">
+        Create a Free Account
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <a href="/docs"
+         class="inline-flex items-center gap-2 border border-zinc-700 hover:border-zinc-500 text-zinc-300 text-sm font-medium px-6 py-3 transition-colors">
+        Browse the Docs
+      </a>
+    </div>
+  </div>
+</section>

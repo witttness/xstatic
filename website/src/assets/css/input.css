@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+@source "../../**/*.njk";
+@source "../../**/*.html";
+
+@theme {
+  --font-family-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-family-mono: "JetBrains Mono", ui-monospace, "Cascadia Code", monospace;
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer utilities {
+  /* Manual code syntax highlighting */
+  .tok-keyword  { color: #c084fc; } /* violet-400  — const, await, return */
+  .tok-string   { color: #4ade80; } /* green-400   — string literals       */
+  .tok-comment  { color: #71717a; font-style: italic; } /* zinc-500 */
+  .tok-fn       { color: #38bdf8; } /* sky-400     — function names        */
+  .tok-num      { color: #fb923c; } /* orange-400  — numbers               */
+  .tok-punct    { color: #94a3b8; } /* slate-400   — brackets, colons      */
+  .tok-prop     { color: #e2e8f0; } /* slate-200   — object keys           */
+}
