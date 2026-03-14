@@ -4,6 +4,7 @@ using Extatic.Api.Dtos;
 using Extatic.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Extatic.Api.Controllers.Client;
 
@@ -20,6 +21,7 @@ public class ClientItemsController(
 
     [HttpGet]
     [Authorize(AuthenticationSchemes = AuthSchemes.ApiKey)]
+    [EnableRateLimiting(RateLimitPolicyNames.ClientReads)]
     public async Task<ActionResult<PagedResult<ItemDto>>> List(
         [FromRoute] string collection_slug,
         [FromQuery] int page = 1,
@@ -33,6 +35,7 @@ public class ClientItemsController(
 
     [HttpGet("{id}")]
     [Authorize(AuthenticationSchemes = AuthSchemes.ApiKey)]
+    [EnableRateLimiting(RateLimitPolicyNames.ClientReads)]
     public async Task<ActionResult<ItemDto>> Get(
         [FromRoute] string collection_slug,
         [FromRoute] Guid id)
@@ -43,7 +46,8 @@ public class ClientItemsController(
     }
 
     [HttpPost]
-    [Authorize(AuthenticationSchemes = $"{AuthSchemes.ApiKey},{AuthSchemes.AppUser}")]
+    [Authorize(Policy = PolicyNames.AuthenticatedAppUser)]
+    [EnableRateLimiting(RateLimitPolicyNames.ClientWrites)]
     public async Task<ActionResult<ItemDto>> Create(
         [FromRoute] string collection_slug,
         [FromBody] CreateItemRequest req)
@@ -57,7 +61,8 @@ public class ClientItemsController(
     }
 
     [HttpPut("{id}")]
-    [Authorize(AuthenticationSchemes = $"{AuthSchemes.ApiKey},{AuthSchemes.AppUser}")]
+    [Authorize(Policy = PolicyNames.AuthenticatedAppUser)]
+    [EnableRateLimiting(RateLimitPolicyNames.ClientWrites)]
     public async Task<ActionResult<ItemDto>> Update(
         [FromRoute] string collection_slug,
         [FromRoute] Guid id,
@@ -70,7 +75,8 @@ public class ClientItemsController(
     }
 
     [HttpDelete("{id}")]
-    [Authorize(AuthenticationSchemes = $"{AuthSchemes.ApiKey},{AuthSchemes.AppUser}")]
+    [Authorize(Policy = PolicyNames.AuthenticatedAppUser)]
+    [EnableRateLimiting(RateLimitPolicyNames.ClientWrites)]
     public async Task<IActionResult> Delete(
         [FromRoute] string collection_slug,
         [FromRoute] Guid id)

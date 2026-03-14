@@ -4,6 +4,7 @@ using Extatic.Api.Dtos;
 using Extatic.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Extatic.Api.Controllers.Client;
 
@@ -20,6 +21,7 @@ public class ClientAttachmentsController(
 
     [HttpGet]
     [Authorize(AuthenticationSchemes = AuthSchemes.ApiKey)]
+    [EnableRateLimiting(RateLimitPolicyNames.ClientReads)]
     public async Task<ActionResult<List<AttachmentDto>>> List(
         [FromRoute] string collection_slug,
         [FromRoute] Guid item_id)
@@ -32,6 +34,7 @@ public class ClientAttachmentsController(
 
     [HttpGet("{id}")]
     [Authorize(AuthenticationSchemes = AuthSchemes.ApiKey)]
+    [EnableRateLimiting(RateLimitPolicyNames.ClientReads)]
     public async Task<ActionResult<AttachmentDto>> Get(
         [FromRoute] string collection_slug,
         [FromRoute] Guid item_id,
@@ -44,7 +47,8 @@ public class ClientAttachmentsController(
     }
 
     [HttpPost]
-    [Authorize(AuthenticationSchemes = $"{AuthSchemes.ApiKey},{AuthSchemes.AppUser}")]
+    [Authorize(Policy = PolicyNames.AuthenticatedAppUser)]
+    [EnableRateLimiting(RateLimitPolicyNames.ClientUploads)]
     public async Task<ActionResult<AttachmentDto>> Upload(
         [FromRoute] string collection_slug,
         [FromRoute] Guid item_id,
@@ -64,7 +68,8 @@ public class ClientAttachmentsController(
     }
 
     [HttpDelete("{id}")]
-    [Authorize(AuthenticationSchemes = $"{AuthSchemes.ApiKey},{AuthSchemes.AppUser}")]
+    [Authorize(Policy = PolicyNames.AuthenticatedAppUser)]
+    [EnableRateLimiting(RateLimitPolicyNames.ClientWrites)]
     public async Task<IActionResult> Delete(
         [FromRoute] string collection_slug,
         [FromRoute] Guid item_id,

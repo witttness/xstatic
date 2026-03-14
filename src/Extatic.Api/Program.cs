@@ -15,8 +15,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.RateLimiting;
-using System.Threading.RateLimiting;
+using Extatic.Api.Auth.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -118,16 +117,13 @@ builder.Services.AddHttpClient("webhook", client =>
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 
-// Rate limiting (Client API: 100 req/min per IP)
+// Rate limiting
 builder.Services.AddRateLimiter(options =>
 {
-    options.AddFixedWindowLimiter("client-api", limiterOptions =>
-    {
-        limiterOptions.PermitLimit = 100;
-        limiterOptions.Window = TimeSpan.FromMinutes(1);
-        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        limiterOptions.QueueLimit = 0;
-    });
+    options.RejectionStatusCode = 429;
+    options.AddPolicy<string, ClientWritesPolicy>(RateLimitPolicyNames.ClientWrites);
+    options.AddPolicy<string, ClientReadsPolicy>(RateLimitPolicyNames.ClientReads);
+    options.AddPolicy<string, ClientUploadsPolicy>(RateLimitPolicyNames.ClientUploads);
 });
 
 // CORS
@@ -171,9 +167,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors();
-app.UseRateLimiter();
 app.UseAuthentication();
 app.UseMiddleware<AppContextMiddleware>();
+app.UseRateLimiter();
 app.UseAuthorization();
 app.MapControllers();
 
