@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "overrides": {
+    "@parcel/watcher": "2.6.0"
+  },
   "scripts": {
     "start": "npm-run-all --parallel watch:eleventy watch:css",
     "watch:eleventy": "eleventy --serve",
@@ -10,9 +13,9 @@
     "build": "tailwindcss -i ./src/assets/css/input.css -o ./_site/assets/css/style.css && eleventy"
   },
   "devDependencies": {
-    "@11ty/eleventy": "^3.0.0",
-    "@tailwindcss/cli": "^4.0.0",
-    "npm-run-all2": "^7.0.0",
-    "tailwindcss": "^4.0.0"
+    "@11ty/eleventy": "^3.1.7",
+    "@tailwindcss/cli": "^4.3.3",
+    "npm-run-all2": "^9.0.3",
+    "tailwindcss": "^4.3.3"
   }
 }
