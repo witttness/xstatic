@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   postgres:
-    image: postgres:17
+    image: postgres:17.11
     environment:
       POSTGRES_USER: extatic
       POSTGRES_PASSWORD: extatic
@@ -46,7 +46,7 @@ services:
 
   # Local OIDC identity provider. Exposes a static user: dev@extatic.local / password
   dex:
-    image: dexidp/dex:v2.41.1
+    image: dexidp/dex:v2.46.0
     ports:
       - "5556:5556"
     volumes:
@@ -65,17 +65,18 @@ services:
   # Dashboard → http://localhost:4180  (authenticated entry point)
   # API direct → http://localhost:5001 (unauthenticated, useful for Client API / curl)
   oauth2-proxy:
-    image: quay.io/oauth2-proxy/oauth2-proxy:v7.14.3
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.15.5
     ports:
       - "4180:4180"
     environment:
       - OAUTH2_PROXY_PROVIDER=oidc
-      # Dex is resolved by container name internally; issuer URL uses localhost because
-      # that is what Dex embeds in tokens (browser must also reach it for the redirect).
+      # Use the internal Dex address for token exchange and JWKS, and localhost for
+      # the browser-facing login page.
       - OAUTH2_PROXY_OIDC_ISSUER_URL=http://dex:5556/dex
-      # Skip issuer check: the token issuer is http://localhost:5556/dex but the proxy
-      # discovers config from http://dex:5556/dex — safe for local dev only.
-      - OAUTH2_PROXY_INSECURE_OIDC_SKIP_ISSUER_VERIFICATION=true
+      - OAUTH2_PROXY_SKIP_OIDC_DISCOVERY=true
+      - OAUTH2_PROXY_LOGIN_URL=http://localhost:5556/dex/auth
+      - OAUTH2_PROXY_REDEEM_URL=http://dex:5556/dex/token
+      - OAUTH2_PROXY_OIDC_JWKS_URL=http://dex:5556/dex/keys
       - OAUTH2_PROXY_CLIENT_ID=oauth2-proxy
       - OAUTH2_PROXY_CLIENT_SECRET=oauth2-proxy-secret
       # 32-byte base64 cookie secret — local dev only, regenerate for any other environment
