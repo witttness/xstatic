@@ -59,7 +59,7 @@ extatic/
 │   │   ├── Models/               # Entity models and DTOs
 │   │   ├── Data/                 # DbContext, migrations, configuration
 │   │   ├── Middleware/           # CORS, rate limiting, error handling
-│   │   ├── Auth/                 # OAuth2 Proxy header parsing, AppUser JWT
+│   │   ├── Auth/                 # OAuth2 Proxy header parsing, AppUser JWT, dynamic CORS
 │   │   ├── Validation/           # JSON Schema validation logic
 │   │   ├── Webhooks/             # Webhook dispatch and retry logic
 │   │   ├── Storage/              # Azure Blob Storage integration
@@ -330,20 +330,24 @@ POST   /api/apps/:app_slug/webhooks/:id/logs/:log_id/retrigger
 
 Called from your frontend. Handles authentication, CRUD on Items, and file uploads.
 
-```
-POST   /api/client/auth/dev/token
+The App is identified by its **public App ID** (`app_` + 16 hex chars) embedded directly in the URL. There is no API key header — the App ID is intentionally public and safe to embed in client-side code.
 
-GET    /api/client/collections/:col_slug/items
-POST   /api/client/collections/:col_slug/items
-GET    /api/client/collections/:col_slug/items/:id
-PUT    /api/client/collections/:col_slug/items/:id
-DELETE /api/client/collections/:col_slug/items/:id
-
-POST   /api/client/collections/:col_slug/items/:id/attachments
-GET    /api/client/collections/:col_slug/items/:id/attachments
-GET    /api/client/collections/:col_slug/items/:id/attachments/:att_id
-DELETE /api/client/collections/:col_slug/items/:id/attachments/:att_id
 ```
+POST   /api/:app_public_id/auth/dev/token
+
+GET    /api/:app_public_id/collections/:col_slug/items
+POST   /api/:app_public_id/collections/:col_slug/items
+GET    /api/:app_public_id/collections/:col_slug/items/:id
+PUT    /api/:app_public_id/collections/:col_slug/items/:id
+DELETE /api/:app_public_id/collections/:col_slug/items/:id
+
+POST   /api/:app_public_id/collections/:col_slug/items/:id/attachments
+GET    /api/:app_public_id/collections/:col_slug/items/:id/attachments
+GET    /api/:app_public_id/collections/:col_slug/items/:id/attachments/:att_id
+DELETE /api/:app_public_id/collections/:col_slug/items/:id/attachments/:att_id
+```
+
+> **CORS:** The App's `allowed_origins` list controls which origins can make cross-origin requests to its Client API endpoints. The public App ID in the URL lets the API resolve the correct CORS policy — including during preflight requests — without requiring any header from the browser. Set `allowed_origins` via `PUT /api/apps/:app_slug` in the dashboard or Platform API.
 
 ---
 
@@ -385,13 +389,16 @@ curl -X POST https://api.extatic.io/api/apps/my-blog/collections \
 
 ### 3. Submit Items from your static site
 
+The App's public ID (returned when you create the App) goes directly in the URL. AppUsers authenticate with a Bearer token obtained via the auth flow.
+
 ```javascript
 // In your frontend JavaScript
-const response = await fetch("https://api.extatic.io/api/client/collections/comments/items", {
+const APP_ID = "app_a1b2c3d4e5f6a7b8"; // public, safe to embed in client-side code
+
+const response = await fetch(`https://api.extatic.io/api/${APP_ID}/collections/comments/items`, {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
-    "X-Api-Key": "your-app-api-key",
     "Authorization": "Bearer <appuser-token>"
   },
   body: JSON.stringify({
@@ -426,8 +433,7 @@ Enable attachments on a per-Collection basis by setting `attachments_enabled: tr
 
 ```bash
 # Upload a file to an Item
-curl -X POST https://api.extatic.io/api/client/collections/photos/items/<item-id>/attachments \
-  -H "X-Api-Key: your-app-api-key" \
+curl -X POST https://api.extatic.io/api/app_a1b2c3d4e5f6a7b8/collections/photos/items/<item-id>/attachments \
   -H "Authorization: Bearer <appuser-token>" \
   -F "file=@photo.jpg"
 ```

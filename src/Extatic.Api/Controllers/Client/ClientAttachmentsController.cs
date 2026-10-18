@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.RateLimiting;
 namespace Extatic.Api.Controllers.Client;
 
 [ApiController]
-[Route("api/client/collections/{collection_slug}/items/{item_id}/attachments")]
+[Route("api/{app_public_id}/collections/{collection_slug}/items/{item_id}/attachments")]
 public class ClientAttachmentsController(
     CollectionService collectionService,
     ItemService itemService,

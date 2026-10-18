@@ -16,9 +16,10 @@ public class ApiKeyAuthenticationHandler(
 {
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        var publicId = Request.Headers["X-App-Id"].FirstOrDefault();
-        if (string.IsNullOrEmpty(publicId))
-            return AuthenticateResult.Fail("Missing X-App-Id header");
+        var segments = Request.Path.Value?.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var publicId = segments?.ElementAtOrDefault(1);
+        if (string.IsNullOrEmpty(publicId) || !publicId.StartsWith("app_"))
+            return AuthenticateResult.Fail("Missing or invalid app identifier in URL");
 
         using var scope = scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();

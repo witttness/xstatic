@@ -15,7 +15,9 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Extatic.Api.Auth.Cors;
 using Extatic.Api.Auth.RateLimiting;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,9 +37,11 @@ builder.Services.AddAuthentication(options =>
 .AddPolicyScheme(AuthSchemes.SmartSelector, "Smart Selector", options =>
 {
     options.ForwardDefaultSelector = ctx =>
-        ctx.Request.Path.StartsWithSegments("/api/client")
-            ? AuthSchemes.ApiKey
-            : AuthSchemes.OAuthProxy;
+    {
+        var segments = ctx.Request.Path.Value?.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var second = segments?.ElementAtOrDefault(1) ?? "";
+        return second.StartsWith("app_") ? AuthSchemes.ApiKey : AuthSchemes.OAuthProxy;
+    };
 })
 .AddScheme<AuthenticationSchemeOptions, OAuthProxyAuthenticationHandler>(AuthSchemes.OAuthProxy, _ => { })
 .AddScheme<AuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(AuthSchemes.ApiKey, _ => { })
@@ -127,11 +131,9 @@ builder.Services.AddRateLimiter(options =>
 });
 
 // CORS
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
-        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
-});
+builder.Services.AddCors();
+builder.Services.AddMemoryCache();
+builder.Services.AddSingleton<ICorsPolicyProvider, DynamicCorsPolicy>();
 
 // Exception handling
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();

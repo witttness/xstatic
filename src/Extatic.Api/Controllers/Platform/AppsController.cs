@@ -41,11 +41,26 @@ public class AppsController(AppService appService) : ControllerBase
         [FromRoute] string app_slug,
         [FromBody] UpdateAppRequest req)
     {
+        if (req.AllowedOrigins is not null)
+        {
+            var invalid = req.AllowedOrigins.Where(o => !IsValidOrigin(o)).ToList();
+            if (invalid.Count > 0)
+                return BadRequest(new { title = "Invalid origins", invalid_origins = invalid });
+        }
+
         var app = await appService.UpdateAsync(
             CurrentApp, req.Name, req.AllowedOrigins,
             req.MaxFileSizeMb, req.MaxAttachmentsPerItem, req.StorageQuotaGb);
         return Ok(app.ToDto());
     }
+
+    private static bool IsValidOrigin(string origin) =>
+        Uri.TryCreate(origin, UriKind.Absolute, out var uri)
+        && uri.Scheme is "https" or "http"
+        && (uri.AbsolutePath == "/" || uri.AbsolutePath == "")
+        && string.IsNullOrEmpty(uri.Query)
+        && string.IsNullOrEmpty(uri.Fragment)
+        && !origin.EndsWith('/');
 
     [HttpDelete("{app_slug}")]
     [Authorize(Policy = PolicyNames.AppOwnerOnly)]

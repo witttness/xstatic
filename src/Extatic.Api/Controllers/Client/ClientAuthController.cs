@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.RateLimiting;
 namespace Extatic.Api.Controllers.Client;
 
 [ApiController]
-[Route("api/client/auth")]
+[Route("api/{app_public_id}/auth")]
 [Authorize(AuthenticationSchemes = AuthSchemes.ApiKey)]
 public class ClientAuthController(DevTokenService devTokenService, AppUserService appUserService) : ControllerBase
 {
