@@ -1,0 +1,54 @@
+{
+  "name": "Extatic",
+  "dockerComposeFile": [
+    "../docker-compose.yml",
+    "docker-compose.yml"
+  ],
+  "service": "workspace",
+  "runServices": [
+    "postgres",
+    "azurite",
+    "api",
+    "dex",
+    "oauth2-proxy",
+    "workspace"
+  ],
+  "workspaceFolder": "/workspaces/extatic",
+  "shutdownAction": "stopCompose",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "22",
+      "installYarn": true
+    }
+  },
+  "postCreateCommand": "dotnet restore Extatic.slnx && cd src/extatic-dashboard && yarn install --frozen-lockfile",
+  "forwardPorts": [
+    4180,
+    4200,
+    5001,
+    5556
+  ],
+  "portsAttributes": {
+    "4180": {
+      "label": "Authenticated dashboard",
+      "onAutoForward": "openBrowser"
+    },
+    "4200": {
+      "label": "Angular dev server"
+    },
+    "5001": {
+      "label": "API"
+    },
+    "5556": {
+      "label": "Dex"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.csharp",
+        "angular.ng-template"
+      ]
+    }
+  }
+}

@@ -1,26 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "/Users/danyo/ai/extatic/tests/Extatic.Api.Tests/Extatic.Api.Tests.csproj": {}
+    "/workspaces/extatic/tests/Extatic.Api.Tests/Extatic.Api.Tests.csproj": {}
   },
   "projects": {
-    "/Users/danyo/ai/extatic/src/Extatic.Api/Extatic.Api.csproj": {
+    "/workspaces/extatic/src/Extatic.Api/Extatic.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/danyo/ai/extatic/src/Extatic.Api/Extatic.Api.csproj",
+        "projectUniqueName": "/workspaces/extatic/src/Extatic.Api/Extatic.Api.csproj",
         "projectName": "Extatic.Api",
-        "projectPath": "/Users/danyo/ai/extatic/src/Extatic.Api/Extatic.Api.csproj",
-        "packagesPath": "/Users/danyo/.nuget/packages/",
-        "outputPath": "/Users/danyo/ai/extatic/src/Extatic.Api/obj/",
+        "projectPath": "/workspaces/extatic/src/Extatic.Api/Extatic.Api.csproj",
+        "packagesPath": "/home/vscode/.nuget/packages/",
+        "outputPath": "/workspaces/extatic/src/Extatic.Api/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/danyo/.nuget/NuGet/NuGet.Config"
+          "/home/vscode/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
         ],
         "sources": {
-          "/opt/homebrew/Cellar/dotnet/10.0.400/libexec/library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -49,37 +48,37 @@
           "dependencies": {
             "Azure.Storage.Blobs": {
               "target": "Package",
-              "version": "[12.27.0, )"
+              "version": "[12.30.1, )"
             },
             "JsonSchema.Net": {
               "target": "Package",
-              "version": "[9.1.0, )"
+              "version": "[9.4.1, )"
             },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
-              "version": "[10.0.3, )"
+              "version": "[10.0.13, )"
             },
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
-              "version": "[10.0.3, )"
+              "version": "[10.0.13, )"
             },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
-              "version": "[10.0.3, )"
+              "version": "[10.0.13, )"
             },
             "Microsoft.EntityFrameworkCore.Design": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
               "target": "Package",
-              "version": "[10.0.3, )"
+              "version": "[10.0.13, )"
             },
             "Npgsql.EntityFrameworkCore.PostgreSQL": {
               "target": "Package",
-              "version": "[10.0.0, )"
+              "version": "[10.0.3, )"
             },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
-              "version": "[10.1.4, )"
+              "version": "[10.3.0, )"
             }
           },
           "imports": [
@@ -101,7 +100,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/opt/homebrew/Cellar/dotnet/10.0.400/libexec/sdk/10.0.400/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/10.0.403/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.AspNetCore": "(,10.0.32767]",
             "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",
@@ -519,23 +518,22 @@
         }
       }
     },
-    "/Users/danyo/ai/extatic/tests/Extatic.Api.Tests/Extatic.Api.Tests.csproj": {
+    "/workspaces/extatic/tests/Extatic.Api.Tests/Extatic.Api.Tests.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/danyo/ai/extatic/tests/Extatic.Api.Tests/Extatic.Api.Tests.csproj",
+        "projectUniqueName": "/workspaces/extatic/tests/Extatic.Api.Tests/Extatic.Api.Tests.csproj",
         "projectName": "Extatic.Api.Tests",
-        "projectPath": "/Users/danyo/ai/extatic/tests/Extatic.Api.Tests/Extatic.Api.Tests.csproj",
-        "packagesPath": "/Users/danyo/.nuget/packages/",
-        "outputPath": "/Users/danyo/ai/extatic/tests/Extatic.Api.Tests/obj/",
+        "projectPath": "/workspaces/extatic/tests/Extatic.Api.Tests/Extatic.Api.Tests.csproj",
+        "packagesPath": "/home/vscode/.nuget/packages/",
+        "outputPath": "/workspaces/extatic/tests/Extatic.Api.Tests/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/danyo/.nuget/NuGet/NuGet.Config"
+          "/home/vscode/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
         ],
         "sources": {
-          "/opt/homebrew/Cellar/dotnet/10.0.400/libexec/library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -543,8 +541,8 @@
             "framework": "net10.0",
             "targetAlias": "net10.0",
             "projectReferences": {
-              "/Users/danyo/ai/extatic/src/Extatic.Api/Extatic.Api.csproj": {
-                "projectPath": "/Users/danyo/ai/extatic/src/Extatic.Api/Extatic.Api.csproj"
+              "/workspaces/extatic/src/Extatic.Api/Extatic.Api.csproj": {
+                "projectPath": "/workspaces/extatic/src/Extatic.Api/Extatic.Api.csproj"
               }
             }
           }
@@ -568,19 +566,19 @@
           "dependencies": {
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
-              "version": "[10.0.3, )"
+              "version": "[10.0.13, )"
             },
             "Microsoft.EntityFrameworkCore.Relational": {
               "target": "Package",
-              "version": "[10.0.3, )"
+              "version": "[10.0.13, )"
             },
             "Microsoft.NET.Test.Sdk": {
               "target": "Package",
-              "version": "[17.14.1, )"
+              "version": "[18.11.0, )"
             },
             "coverlet.collector": {
               "target": "Package",
-              "version": "[6.0.4, )"
+              "version": "[10.1.0, )"
             },
             "xunit": {
               "target": "Package",
@@ -588,7 +586,7 @@
             },
             "xunit.runner.visualstudio": {
               "target": "Package",
-              "version": "[3.1.4, )"
+              "version": "[4.0.1, )"
             }
           },
           "imports": [
@@ -607,7 +605,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/opt/homebrew/Cellar/dotnet/10.0.400/libexec/sdk/10.0.400/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/10.0.403/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",

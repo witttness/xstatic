@@ -1,0 +1,14 @@
+services:
+  workspace:
+    image: mcr.microsoft.com/devcontainers/dotnet:10.0
+    command: sleep infinity
+    volumes:
+      - .:/workspaces/extatic:cached
+    working_dir: /workspaces/extatic
+    ports:
+      - "4200:4200"
+
+  oauth2-proxy:
+    environment:
+      OAUTH2_PROXY_UPSTREAMS: http://workspace:4200
+

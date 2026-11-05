@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet new:*)",
+      "WebSearch",
+      "Bash(ls:*)",
+      "Bash(dotnet add:*)",
+      "Bash(dotnet build:*)",
+      "Bash(dotnet ef migrations add:*)",
+      "Bash(dotnet tool update:*)",
+      "Bash(dotnet test:*)",
+      "WebFetch(domain:payloadcms.com)",
+      "WebFetch(domain:angular.dev)",
+      "Bash(ng new:*)",
+      "Bash(yarn add:*)",
+      "Bash(yarn ng build:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(docker exec:*)"
+    ]
+  }
+}

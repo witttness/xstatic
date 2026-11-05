@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Extatic.Api.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9be09bbdb6144dc601a9d1e3bf12e282da135b68")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ca6c696647866bb68c1756e1de1fd14303cdc918")]
 [assembly: System.Reflection.AssemblyProductAttribute("Extatic.Api.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Extatic.Api.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

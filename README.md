@@ -114,6 +114,19 @@ extatic/
 
 ## Getting Started
 
+### Dev container
+
+Open this repository in a Dev Containers compatible editor and select **Reopen in Container**. The dev container starts the services from `docker-compose.yml` and installs the .NET and dashboard dependencies.
+
+Start the Angular server in the container terminal:
+
+```bash
+cd src/extatic-dashboard
+yarn start --proxy-config ../../.devcontainer/proxy.conf.json
+```
+
+Open `http://localhost:4180` for the authenticated dashboard. The API is available at `http://localhost:5001`. The Angular server listens on port 4200, while the dev container's proxy configuration routes API requests to the Compose `api` service. Use `dev@extatic.local` / `abc123` to sign in.
+
 ### Option A: Docker Compose (recommended for local dev)
 
 ```bash
