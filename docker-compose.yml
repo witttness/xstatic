@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   postgres:
-    image: postgres:17.11
+    image: postgres:18
     environment:
       POSTGRES_USER: extatic
       POSTGRES_PASSWORD: extatic
@@ -15,7 +15,7 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres18_data:/var/lib/postgresql
 
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite
@@ -99,4 +99,4 @@ services:
         condition: service_healthy
 
 volumes:
-  postgres_data:
+  postgres18_data:

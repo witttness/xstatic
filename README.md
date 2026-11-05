@@ -127,6 +127,8 @@ yarn start --proxy-config ../../.devcontainer/proxy.conf.json
 
 Open `http://localhost:4180` for the authenticated dashboard. The API is available at `http://localhost:5001`. The Angular server listens on port 4200, while the dev container's proxy configuration routes API requests to the Compose `api` service. Use `dev@extatic.local` / `abc123` to sign in.
 
+PostgreSQL 18 uses a fresh `postgres18_data` volume mounted at `/var/lib/postgresql`. If you previously ran PostgreSQL 17, its `postgres_data` volume remains available, but its database contents are not automatically migrated. Export the old database with PostgreSQL 17 and restore it into PostgreSQL 18 if you need that data.
+
 ### Option A: Docker Compose (recommended for local dev)
 
 ```bash
