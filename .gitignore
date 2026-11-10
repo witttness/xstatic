@@ -60,6 +60,7 @@ docker-compose.override.yml
 
 ## Certificates / secrets
 secrets.json
+*.secrets.json
 *.pfx
 *.pem
 credentials

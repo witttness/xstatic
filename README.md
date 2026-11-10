@@ -46,7 +46,7 @@ Extatic fills that gap. Define your data shape with JSON Schema, let your users 
 | **Frontend State** | Angular Signals | Reactive state management via built-in Angular Signals |
 | **Database** | PostgreSQL | Relational store with native JSONB column support |
 | **Hosting** | Azure Container Apps | Containerized deployment for API, OAuth2 Proxy, and dashboard |
-| **Secrets** | Azure Key Vault | Production secrets management |
+| **Secrets** | Azure Container App secrets | Stores deployment credentials and signing keys |
 
 ### Repository Structure
 
@@ -225,7 +225,7 @@ dotnet ef database update
 dotnet run
 ```
 
-> **Note:** You'll also need OAuth2 Proxy running locally. See `infra/oauth2-proxy/oauth2-proxy.cfg` for configuration.
+> **Note:** You'll also need OAuth2 Proxy running locally. The Docker Compose service contains the current local configuration.
 
 **Frontend:**
 
@@ -237,14 +237,7 @@ ng serve
 
 ### Deploying to Azure
 
-The application is designed to run on **Azure Container Apps**:
-
-1. Build and push container images for the API and dashboard to an Azure Container Registry (or GitHub Container Registry).
-2. Deploy using the manifest in `infra/azure-container-apps.yml` or the Bicep/Terraform templates in `infra/`.
-3. Provision an **Azure Database for PostgreSQL (Flexible Server)** for the production database.
-4. Create an **Azure Blob Storage** account for Attachments, optionally enabling **Azure CDN**.
-5. Store secrets (database credentials, OAuth client secrets) in **Azure Key Vault**.
-6. Configure OAuth2 Proxy as a sidecar container within the Container App.
+Use the [Azure Bicep deployment guide](infra/azure/README.md) to create separate test and production stacks. It covers the Container App, OAuth2 Proxy sidecar, private PostgreSQL Flexible Server, Blob Storage, and a shared container registry.
 
 ### Running Tests
 
@@ -265,24 +258,20 @@ npx playwright test   # or npx cypress run
 
 ## Architecture Overview
 
-```
-                    ┌───────────────────────────────────────────────┐
-                    │          Azure Container Apps                 │
-                    │                                               │
-┌───────────┐       │  ┌──────────────┐    ┌──────────────────┐     │
-│  Browser  │──────►│  │ OAuth2 Proxy │───►│  Extatic API     │     │
-│ (Angular  │       │  │  (sidecar)   │    │  (.NET 10)       │     │
-│ Dashboard)│       │  └──────────────┘    └─────────┬────────┘     │
-└───────────┘       │                                │              │
-                    └────────────────────────────────┼──────────────┘
-                                                     │
-                         ┌───────────────────────────┼───────────────┐
-                         │                           │               │
-                         ▼                           ▼               ▼
-               ┌──────────────────┐    ┌──────────────────┐  ┌────────────┐
-               │ Azure Database   │    │ Azure Blob       │  │ Azure Key  │
-               │ for PostgreSQL   │    │ Storage + CDN    │  │ Vault      │
-               └──────────────────┘    └──────────────────┘  └────────────┘
+```text
+Browser / client
+      │
+      ▼
+Azure Container App ingress
+      │
+      ▼
+OAuth2 Proxy :4180
+      │
+      ▼
+Dashboard nginx :8081 ── /api/* ──► .NET API :8080
+                                      │           │
+                                      ▼           ▼
+                               private PostgreSQL  Azure Blob Storage
 ```
 
 ### Entity Model
