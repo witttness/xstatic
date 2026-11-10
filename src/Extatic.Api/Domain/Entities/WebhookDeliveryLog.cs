@@ -10,6 +10,7 @@ public class WebhookDeliveryLog
     public string? ResponseBody { get; set; }
     public int AttemptNumber { get; set; } = 1;
     public DateTime? NextRetryAt { get; set; }
+    public DateTime? ClaimedUntil { get; set; }
     public DateTime? SucceededAt { get; set; }
     public DateTime CreatedAt { get; set; }
 

@@ -16,31 +16,33 @@ public class WebhookDispatcher(
 
     public ChannelReader<WebhookDeliveryWorkItem> Reader => _channel.Reader;
 
-    public async Task EnqueueAsync(Guid appId, string eventType, Guid entityId, JsonElement data)
+    public async Task StageAsync(AppDbContext db, Guid appId, string eventType, JsonElement data)
     {
-        using var scope = scopeFactory.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
         var webhooks = await db.Webhooks
             .Where(w => w.AppId == appId && w.IsActive && w.Events.Contains(eventType))
             .ToListAsync();
 
+        var payload = payloadBuilder.Build(eventType, appId, data);
         foreach (var webhook in webhooks)
         {
-            var payload = payloadBuilder.Build(eventType, appId, data);
             var log = new WebhookDeliveryLog
             {
                 WebhookId = webhook.Id,
                 EventType = eventType,
                 Payload = payload,
-                AttemptNumber = 1
+                AttemptNumber = 0,
+                NextRetryAt = DateTime.UtcNow
             };
             db.WebhookDeliveryLogs.Add(log);
-            await db.SaveChangesAsync();
-
-            await _channel.Writer.WriteAsync(
-                new WebhookDeliveryWorkItem(webhook.Id, log.Id, webhook.Url, webhook.Secret, payload));
         }
+    }
+
+    public async Task EnqueueAsync(Guid appId, string eventType, Guid entityId, JsonElement data)
+    {
+        using var scope = scopeFactory.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await StageAsync(db, appId, eventType, data);
+        await db.SaveChangesAsync();
     }
 
     public async Task EnqueueWorkItemAsync(WebhookDeliveryWorkItem item)

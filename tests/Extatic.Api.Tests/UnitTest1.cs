@@ -1,10 +1,15 @@
-﻿namespace Extatic.Api.Tests;
+using Extatic.Api.Auth;
 
-public class UnitTest1
+namespace Extatic.Api.Tests;
+
+public class ApiTestFixtureTests
 {
     [Fact]
-    public void Test1()
+    public void PlatformPrincipal_ContainsUserIdClaim()
     {
+        var userId = Guid.NewGuid();
+        var principal = ApiTestFixture.PlatformPrincipal(userId);
 
+        Assert.Equal(userId.ToString(), principal.FindFirst(AppClaimTypes.UserId)?.Value);
     }
 }

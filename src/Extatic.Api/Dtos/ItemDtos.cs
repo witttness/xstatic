@@ -7,11 +7,13 @@ public record ItemDto(
     Guid CollectionId,
     Guid? AppUserId,
     JsonElement Data,
+    long Version,
     DateTime CreatedAt,
     DateTime UpdatedAt,
     List<AttachmentDto>? Attachments = null);
 
 public record CreateItemRequest(JsonElement Data);
 public record UpdateItemRequest(JsonElement Data);
+public record PlatformUpdateItemRequest(JsonElement Data, long Version);
 
 public record PagedResult<T>(List<T> Items, int Total, int Page, int PageSize);

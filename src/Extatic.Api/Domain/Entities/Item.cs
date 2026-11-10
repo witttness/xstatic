@@ -6,6 +6,7 @@ public class Item
     public Guid CollectionId { get; set; }
     public Guid? AppUserId { get; set; }
     public string Data { get; set; } = "{}";
+    public long Version { get; set; } = 1;
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 

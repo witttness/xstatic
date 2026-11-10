@@ -17,7 +17,7 @@ namespace Extatic.Api.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.3")
+                .HasAnnotation("ProductVersion", "10.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -293,6 +293,12 @@ namespace Extatic.Api.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(1L);
+
                     b.HasKey("Id");
 
                     b.HasIndex("AppUserId");
@@ -392,6 +398,9 @@ namespace Extatic.Api.Migrations
                     b.Property<int>("AttemptNumber")
                         .HasColumnType("integer");
 
+                    b.Property<DateTime?>("ClaimedUntil")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -427,6 +436,8 @@ namespace Extatic.Api.Migrations
                     b.HasIndex("NextRetryAt");
 
                     b.HasIndex("WebhookId");
+
+                    b.HasIndex("SucceededAt", "NextRetryAt", "ClaimedUntil");
 
                     b.ToTable("webhook_delivery_logs", (string)null);
                 });
