@@ -53,6 +53,27 @@ public class PlatformItemCreateTests(ApiTestFixture fixture) : IClassFixture<Api
     }
 
     [Fact]
+    public async Task Create_ReusesIdentifiedCollectionSchemaAcrossRequests()
+    {
+        const string schema = """{"$id":"https://example.com/movie.schema.json","$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","required":["title"],"properties":{"title":{"type":"string"}}}""";
+        var (owner, app, collection) = await fixture.SeedAppAsync(schema);
+        await using var firstDb = fixture.CreateContext();
+        await using var secondDb = fixture.CreateContext();
+        var first = PlatformItemTestHelper.Controller(fixture, firstDb, app, owner.Id);
+        var second = PlatformItemTestHelper.Controller(fixture, secondDb, app, owner.Id);
+
+        var firstResponse = await first.Create(collection.Slug,
+            new CreateItemRequest(JsonSerializer.SerializeToElement(new { title = "First" })));
+        var secondResponse = await second.Create(collection.Slug,
+            new CreateItemRequest(JsonSerializer.SerializeToElement(new { title = "Second" })));
+
+        Assert.IsType<CreatedAtActionResult>(firstResponse.Result);
+        Assert.IsType<CreatedAtActionResult>(secondResponse.Result);
+        await using var verify = fixture.CreateContext();
+        Assert.Equal(2, await verify.Items.CountAsync(i => i.CollectionId == collection.Id));
+    }
+
+    [Fact]
     public async Task Detail_IsScopedToAppAndCollection()
     {
         var (owner, app, collection) = await fixture.SeedAppAsync();

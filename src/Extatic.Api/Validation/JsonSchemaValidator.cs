@@ -8,7 +8,10 @@ public class JsonSchemaValidator
 {
     public List<ValidationError> Validate(string schemaJson, JsonElement data)
     {
-        var schema = JsonSchema.FromText(schemaJson);
+        var schema = JsonSchema.FromText(schemaJson, new BuildOptions
+        {
+            SchemaRegistry = new SchemaRegistry()
+        });
         var options = new EvaluationOptions { OutputFormat = OutputFormat.List };
         var results = schema.Evaluate(data, options);
 

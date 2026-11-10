@@ -58,6 +58,20 @@ describe('ItemEditorComponent', () => {
     expect(editor.saved()?.version).toBe(3);
   });
 
+  it('accepts changes from JSON Forms and retains extra properties in raw mode', () => {
+    const fixture = open(true);
+    const editor = fixture.componentInstance;
+    const title = fixture.nativeElement.querySelector('input[type="text"]') as HTMLInputElement;
+    title.value = 'Edited in form';
+    title.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(editor.draft()['title']).toBe('Edited in form');
+    expect(editor.draft()['extra']).toBe(7);
+    editor.switchMode('raw');
+    expect(editor.raw()).toContain('Edited in form');
+    expect(editor.raw()).toContain('"extra": 7');
+  });
+
   it('rejects malformed raw JSON and keeps a draft after a conflict', () => {
     const fixture = open(true);
     const editor = fixture.componentInstance;
@@ -127,5 +141,19 @@ describe('ItemEditorComponent', () => {
     http.expectOne('/api/apps/my-app/collections/posts/items/i').flush({}, { status: 403, statusText: 'Forbidden' });
     expect(editor.saveError()).toContain('no longer allows');
     expect(editor.draft()['title']).toBe('Unsaved');
+  });
+
+  it('loads a draft 2020-12 Collection schema in form mode', () => {
+    const fixture = open(false, app, {
+      ...collection,
+      schema: JSON.stringify({
+        $schema: 'https://json-schema.org/draft/2020-12/schema',
+        type: 'object',
+        properties: { title: { type: 'string', minLength: 3 } },
+        required: ['title'],
+      }),
+    });
+    expect(fixture.componentInstance.mode()).toBe('form');
+    expect(fixture.nativeElement.querySelector('input[type="text"]')).not.toBeNull();
   });
 });

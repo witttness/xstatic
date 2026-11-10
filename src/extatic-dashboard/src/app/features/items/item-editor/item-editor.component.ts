@@ -1,21 +1,22 @@
-import { Component, Input, OnInit, inject, signal } from '@angular/core';
+import { Component, Input, OnInit, computed, inject, signal } from '@angular/core';
 import { Location } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
+import type { ErrorObject } from 'ajv';
+import { JsonSchema } from '@jsonforms/core';
 import { ApiService } from '../../../core/services/api.service';
 import { App } from '../../../core/models/app.model';
 import { Collection } from '../../../core/models/collection.model';
 import { Item, ApiProblem } from '../../../core/models/item.model';
 import { PageHeaderComponent } from '../../../shared/page-header/page-header.component';
-import { SchemaFormComponent } from '../schema-form/schema-form.component';
-import { FormDescription } from '../schema-form/schema-form.model';
-import { describeSchema, initialDraft, isRecord } from '../schema-form/schema-form.util';
+import { ItemJsonFormComponent } from '../jsonforms/item-json-form.component';
+import { initialDataFor, isRecord, parseItemSchema } from '../jsonforms/item-schema';
 
 @Component({
   selector: 'app-item-editor',
   standalone: true,
-  imports: [RouterLink, PageHeaderComponent, SchemaFormComponent],
+  imports: [RouterLink, PageHeaderComponent, ItemJsonFormComponent],
   template: `
     <app-page-header [title]="itemId ? 'Item' : 'New Item'" />
     <a [routerLink]="listLink" class="text-xs text-accent hover:underline">← Items</a>
@@ -25,17 +26,17 @@ import { describeSchema, initialDraft, isRecord } from '../schema-form/schema-fo
       @if (saved()) { <p role="status" class="mt-4 text-success">Item saved. ID: {{ saved()!.id }}</p> }
       @if (!app()?.can_manage_items) { <p role="status" class="mt-4 text-sm">You can view this Item, but your App role cannot change it.</p> }
       @if (item()) { <p class="mt-3 font-mono text-xs text-text-muted">{{ item()!.id }} · Version {{ item()!.version }}</p> }
-      @if (description().supported && app()?.can_manage_items) {
+      @if (schemaSupported() && app()?.can_manage_items) {
         <div class="flex gap-3 mt-5" role="group" aria-label="Item entry mode">
           <button type="button" (click)="switchMode('form')" [attr.aria-pressed]="mode() === 'form'" class="text-sm text-accent">Form</button>
           <button type="button" (click)="switchMode('raw')" [attr.aria-pressed]="mode() === 'raw'" class="text-sm text-accent">Raw JSON</button>
         </div>
-      } @else if (!description().supported && app()?.can_manage_items) {
-        <p class="mt-4 text-xs text-text-muted">{{ fallbackReason() }}</p>
+      } @else if (!schemaSupported() && app()?.can_manage_items) {
+        <p class="mt-4 text-xs text-text-muted">{{ schemaReason() }}</p>
       }
       <div class="mt-5 max-w-2xl">
-        @if (mode() === 'form' && description().supported && app()?.can_manage_items) {
-          <app-schema-form [fields]="formFields()" [draft]="draft()" [errors]="fieldErrors()" (draftChange)="onFormChange($event)" />
+        @if (mode() === 'form' && schemaSupported() && app()?.can_manage_items) {
+          <app-item-json-form [schema]="schema()!" [data]="draft()" [additionalErrors]="formErrors()" (dataChange)="onFormChange($event)" />
         } @else {
           <label for="item-json" class="block text-sm font-medium mb-2">Item JSON data</label>
           <textarea id="item-json" rows="16" [value]="raw()" (input)="onRawInput($event)" [readOnly]="!app()?.can_manage_items"
@@ -78,14 +79,23 @@ export class ItemEditorComponent implements OnInit {
   inputError = signal<string | null>(null);
   fieldErrors = signal<{ pointer: string; message: string }[]>([]);
   conflict = signal(false);
-  description = signal<FormDescription>({ supported: false, reason: '' });
+  schema = signal<JsonSchema | null>(null);
+  schemaReason = signal<string | null>(null);
   mode = signal<'form' | 'raw'>('raw');
   draft = signal<Record<string, unknown>>({});
   raw = signal('{}');
+  schemaSupported = computed(() => this.schema() !== null);
+  formErrors = computed<ErrorObject[]>(() =>
+    this.fieldErrors().map(error => ({
+      instancePath: error.pointer,
+      schemaPath: '',
+      keyword: 'server',
+      params: {},
+      message: error.message,
+    })),
+  );
   get base() { return `/apps/${this.appSlug}/collections/${this.collectionSlug}/items`; }
   get listLink() { return ['/apps', this.appSlug, 'collections', this.collectionSlug, 'items']; }
-  formFields() { const result = this.description(); return result.supported ? result.fields : []; }
-  fallbackReason() { const result = this.description(); return result.supported ? '' : result.reason; }
 
   ngOnInit() {
     forkJoin({
@@ -96,11 +106,12 @@ export class ItemEditorComponent implements OnInit {
       next: result => {
         this.app.set(result.app);
         this.collection.set(result.collection);
-        const description = describeSchema(result.collection.schema);
-        this.description.set(description);
-        this.mode.set(description.supported && result.app.can_manage_items ? 'form' : 'raw');
-        if (!this.itemId && description.supported) {
-          const initial = initialDraft(description.fields);
+        const parsed = parseItemSchema(result.collection.schema);
+        this.schema.set(parsed.schema);
+        this.schemaReason.set(parsed.reason);
+        this.mode.set(parsed.schema && result.app.can_manage_items ? 'form' : 'raw');
+        if (!this.itemId && parsed.schema) {
+          const initial = initialDataFor(parsed.schema);
           this.draft.set(initial);
           this.raw.set(JSON.stringify(initial, null, 2));
         }
@@ -121,7 +132,12 @@ export class ItemEditorComponent implements OnInit {
     }
   }
   onRawInput(event: Event) { this.raw.set((event.target as HTMLTextAreaElement).value); this.inputError.set(null); }
-  onFormChange(value: Record<string, unknown>) { this.draft.set(value); this.raw.set(JSON.stringify(value, null, 2)); this.fieldErrors.set([]); }
+  onFormChange(value: unknown) {
+    if (!isRecord(value)) return;
+    this.draft.set(value);
+    this.raw.set(JSON.stringify(value, null, 2));
+    this.fieldErrors.set([]);
+  }
   switchMode(next: 'form' | 'raw') {
     if (next === 'form') {
       const parsed = this.parseRaw();
