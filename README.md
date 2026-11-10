@@ -351,6 +351,8 @@ GET    /api/:app_public_id/collections/:col_slug/items/:id/attachments/:att_id
 DELETE /api/:app_public_id/collections/:col_slug/items/:id/attachments/:att_id
 ```
 
+`auth/dev/token` is available only when the API runs in the Development environment. Client write routes require a signed AppUser JWT for the App ID in the URL. A production AppUser sign-in flow is not yet implemented.
+
 > **CORS:** The App's `allowed_origins` list controls which origins can make cross-origin requests to its Client API endpoints. The public App ID in the URL lets the API resolve the correct CORS policy — including during preflight requests — without requiring any header from the browser. Set `allowed_origins` via `PUT /api/apps/:app_slug` in the dashboard or Platform API.
 
 ---
@@ -455,6 +457,8 @@ Default limits (configurable per App):
 ## Webhooks
 
 Subscribe to events and get HTTP POST callbacks at your URL. Payloads are signed with HMAC-SHA256.
+
+Webhook destinations must use HTTPS and resolve only to public IP addresses. Redirects are not followed.
 
 **Supported events:** `item.created`, `item.updated`, `item.deleted`, `appuser.created`, `attachment.created`, `attachment.deleted`
 

@@ -57,6 +57,9 @@ public class ClientAttachmentsController(
         var collection = await collectionService.GetBySlugAsync(CurrentApp.Id, collection_slug);
         var item = await itemService.GetByIdAsync(collection.Id, item_id);
 
+        if (AppUserId is null || item.AppUserId != AppUserId)
+            throw new ForbiddenException("Only the Item owner can upload attachments");
+
         await using var stream = file.OpenReadStream();
         var attachment = await attachmentService.UploadAsync(
             item, collection, CurrentApp, AppUserId,
@@ -77,6 +80,8 @@ public class ClientAttachmentsController(
     {
         var collection = await collectionService.GetBySlugAsync(CurrentApp.Id, collection_slug);
         var item = await itemService.GetByIdAsync(collection.Id, item_id);
+        if (AppUserId is null || item.AppUserId != AppUserId)
+            throw new ForbiddenException("Only the Item owner can delete attachments");
         var attachment = await attachmentService.GetByIdAsync(item.Id, id);
         await attachmentService.DeleteAsync(attachment);
         return NoContent();

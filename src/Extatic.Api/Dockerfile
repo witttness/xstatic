@@ -8,6 +8,7 @@ COPY src/Extatic.Api/ src/Extatic.Api/
 RUN dotnet publish src/Extatic.Api/Extatic.Api.csproj -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build /app/publish .
 EXPOSE 8080

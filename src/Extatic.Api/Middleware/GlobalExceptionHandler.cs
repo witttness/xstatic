@@ -29,7 +29,7 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
         {
             Status = statusCode,
             Title = title,
-            Detail = exception.Message,
+            Detail = statusCode == 500 ? "An unexpected error occurred." : exception.Message,
             Instance = context.Request.Path
         };
 

@@ -43,6 +43,9 @@ public class WebhookDeliveryWorker(
 
         try
         {
+            if (!WebhookDestination.IsValidUrl(item.Url))
+                throw new HttpRequestException("Invalid webhook destination");
+
             using var request = new HttpRequestMessage(HttpMethod.Post, item.Url);
             request.Content = new StringContent(item.Payload, System.Text.Encoding.UTF8, "application/json");
             request.Headers.Add("X-Extatic-Signature", signature);

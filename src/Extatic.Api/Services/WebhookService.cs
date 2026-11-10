@@ -1,6 +1,7 @@
+using Microsoft.EntityFrameworkCore;
 using Extatic.Api.Data;
 using Extatic.Api.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
+using Extatic.Api.Webhooks;
 
 namespace Extatic.Api.Services;
 
@@ -18,6 +19,7 @@ public class WebhookService(AppDbContext db)
 
     public async Task<Webhook> CreateAsync(Guid appId, string url, string[] events)
     {
+        ValidateUrl(url);
         var secret = Convert.ToBase64String(
             System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
         var webhook = new Webhook
@@ -35,11 +37,19 @@ public class WebhookService(AppDbContext db)
 
     public async Task<Webhook> UpdateAsync(Webhook webhook, string? url, string[]? events, bool? isActive)
     {
+        if (url is not null) ValidateUrl(url);
         if (url is not null) webhook.Url = url;
         if (events is not null) webhook.Events = events;
         if (isActive is not null) webhook.IsActive = isActive.Value;
         await db.SaveChangesAsync();
         return webhook;
+    }
+
+    private static void ValidateUrl(string url)
+    {
+        if (!WebhookDestination.IsValidUrl(url))
+            throw new ValidationException("Webhook URL must be a public HTTPS URL",
+                [new ValidationError("url", "Must be a public HTTPS URL")]);
     }
 
     public async Task DeleteAsync(Webhook webhook)

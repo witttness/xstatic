@@ -23,7 +23,9 @@
   "private": true,
   "packageManager": "yarn@1.22.22",
   "resolutions": {
-    "@jridgewell/sourcemap-codec": "1.6.0"
+    "@jridgewell/sourcemap-codec": "1.6.0",
+    "fast-uri": "3.1.9",
+    "vite": "8.3.4"
   },
   "dependencies": {
     "@angular/common": "^22.2.3",

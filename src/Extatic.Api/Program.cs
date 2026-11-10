@@ -87,11 +87,13 @@ builder.Services.AddAuthorization(options =>
 
     options.AddPolicy(PolicyNames.AuthenticatedAppUser, policy =>
         policy.RequireAuthenticatedUser()
-              .AddAuthenticationSchemes(AuthSchemes.AppUser));
+              .AddAuthenticationSchemes(AuthSchemes.AppUser)
+              .AddRequirements(new AppUserAppRequirement()));
 });
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IAuthorizationHandler, AppRoleHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, AppUserAppHandler>();
 
 // Services
 builder.Services.AddScoped<UserService>();
@@ -119,6 +121,11 @@ builder.Services.AddHostedService<WebhookLogCleanupWorker>();
 builder.Services.AddHttpClient("webhook", client =>
 {
     client.Timeout = TimeSpan.FromSeconds(30);
+}).ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+{
+    AllowAutoRedirect = false,
+    UseProxy = false,
+    ConnectCallback = WebhookDestination.ConnectAsync
 });
 
 // Rate limiting

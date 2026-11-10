@@ -11,7 +11,7 @@ namespace Extatic.Api.Controllers.Client;
 [ApiController]
 [Route("api/{app_public_id}/auth")]
 [Authorize(AuthenticationSchemes = AuthSchemes.ApiKey)]
-public class ClientAuthController(DevTokenService devTokenService, AppUserService appUserService) : ControllerBase
+public class ClientAuthController(DevTokenService devTokenService, AppUserService appUserService, IWebHostEnvironment environment) : ControllerBase
 {
     private App CurrentApp => (App)HttpContext.Items["CurrentApp"]!;
 
@@ -19,6 +19,9 @@ public class ClientAuthController(DevTokenService devTokenService, AppUserServic
     [EnableRateLimiting(RateLimitPolicyNames.ClientWrites)]
     public async Task<ActionResult<DevTokenResponse>> GetDevToken([FromBody] DevTokenRequest req)
     {
+        if (!environment.IsDevelopment())
+            return NotFound();
+
         var (user, token) = await devTokenService.IssueAsync(
             appUserService, CurrentApp.Id, req.Email, req.DisplayName);
         return Ok(new DevTokenResponse(user.ToDto(), token));
