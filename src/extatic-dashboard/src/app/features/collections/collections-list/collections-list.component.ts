@@ -73,6 +73,8 @@ import { ConfirmModalComponent } from '../../../shared/confirm-modal/confirm-mod
                 </td>
                 <td class="px-4 py-3 text-text-muted text-xs">{{ formatDate(col.created_at) }}</td>
                 <td class="px-4 py-3 text-right flex items-center justify-end gap-3">
+                  <a [routerLink]="['/apps', appSlug, 'collections', col.slug, 'items']"
+                    class="text-xs text-accent hover:underline">Items</a>
                   <a [routerLink]="['/apps', appSlug, 'collections', col.slug]"
                     class="text-xs text-text-muted hover:text-text-primary">Edit</a>
                   <button type="button" (click)="confirmDelete(col)"

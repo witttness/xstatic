@@ -12,7 +12,8 @@ public record AppDto(
     int MaxAttachmentsPerItem,
     int StorageQuotaGb,
     DateTime CreatedAt,
-    DateTime UpdatedAt);
+    DateTime UpdatedAt,
+    bool CanManageItems);
 
 public record CreateAppRequest(string Name, string Slug);
 

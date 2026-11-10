@@ -11,12 +11,12 @@ public class WebhookRetryWorker(
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using var timer = new PeriodicTimer(TimeSpan.FromMinutes(1));
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(5));
         while (await timer.WaitForNextTickAsync(stoppingToken))
         {
             try
             {
-                await ProcessRetriableLogsAsync(stoppingToken);
+                await ProcessDueAsync(stoppingToken);
             }
             catch (Exception ex)
             {
@@ -25,25 +25,40 @@ public class WebhookRetryWorker(
         }
     }
 
-    private async Task ProcessRetriableLogsAsync(CancellationToken ct)
+    public async Task ProcessDueAsync(CancellationToken ct = default)
     {
         using var scope = scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         var now = DateTime.UtcNow;
-        var logs = await db.WebhookDeliveryLogs
-            .Include(l => l.Webhook)
-            .Where(l => l.NextRetryAt <= now
-                && l.SucceededAt == null
+        var dueIds = await db.WebhookDeliveryLogs
+            .Where(l => l.SucceededAt == null
                 && l.AttemptNumber < 5
-                && l.Webhook.IsActive)
+                && l.Webhook.IsActive
+                && (l.NextRetryAt <= now || l.ClaimedUntil <= now))
+            .OrderBy(l => l.NextRetryAt)
+            .Select(l => l.Id)
+            .Take(100)
             .ToListAsync(ct);
 
-        foreach (var log in logs)
+        foreach (var logId in dueIds)
         {
-            log.AttemptNumber++;
-            log.NextRetryAt = null;
-            await db.SaveChangesAsync(ct);
+            var claimed = await db.WebhookDeliveryLogs
+                .Where(l => l.Id == logId
+                    && l.SucceededAt == null
+                    && l.AttemptNumber < 5
+                    && l.Webhook.IsActive
+                    && (l.NextRetryAt <= now || l.ClaimedUntil <= now))
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(l => l.AttemptNumber, l => l.AttemptNumber + 1)
+                    .SetProperty(l => l.NextRetryAt, (DateTime?)null)
+                    .SetProperty(l => l.ClaimedUntil, now.AddMinutes(2)), ct);
+            if (claimed == 0) continue;
+
+            var log = await db.WebhookDeliveryLogs
+                .AsNoTracking()
+                .Include(l => l.Webhook)
+                .FirstAsync(l => l.Id == logId, ct);
 
             await dispatcher.EnqueueWorkItemAsync(new WebhookDeliveryWorkItem(
                 log.WebhookId, log.Id, log.Webhook.Url, log.Webhook.Secret, log.Payload));

@@ -8,10 +8,10 @@ public static class DtoMappers
     public static UserDto ToDto(this User u) =>
         new(u.Id, u.Email, u.Name, u.CreatedAt);
 
-    public static AppDto ToDto(this App a) =>
+    public static AppDto ToDto(this App a, bool canManageItems = false) =>
         new(a.Id, a.Name, a.Slug, a.PublicId, a.AllowedOrigins,
             a.MaxFileSizeMb, a.MaxAttachmentsPerItem, a.StorageQuotaGb,
-            a.CreatedAt, a.UpdatedAt);
+            a.CreatedAt, a.UpdatedAt, canManageItems);
 
     public static CollectionDto ToDto(this Collection c) =>
         new(c.Id, c.AppId, c.Name, c.Slug, c.Schema,
@@ -20,7 +20,7 @@ public static class DtoMappers
     public static ItemDto ToDto(this Item i) =>
         new(i.Id, i.CollectionId, i.AppUserId,
             JsonDocument.Parse(i.Data).RootElement,
-            i.CreatedAt, i.UpdatedAt,
+            i.Version, i.CreatedAt, i.UpdatedAt,
             i.Attachments?.Select(a => a.ToDto()).ToList());
 
     public static AttachmentDto ToDto(this Attachment a) =>

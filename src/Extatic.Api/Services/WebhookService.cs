@@ -1,11 +1,10 @@
 using Extatic.Api.Data;
 using Extatic.Api.Domain.Entities;
-using Extatic.Api.Webhooks;
 using Microsoft.EntityFrameworkCore;
 
 namespace Extatic.Api.Services;
 
-public class WebhookService(AppDbContext db, WebhookDispatcher dispatcher)
+public class WebhookService(AppDbContext db)
 {
     public async Task<List<Webhook>> GetForAppAsync(Guid appId)
         => await db.Webhooks.Where(w => w.AppId == appId).ToListAsync();
@@ -66,7 +65,14 @@ public class WebhookService(AppDbContext db, WebhookDispatcher dispatcher)
         if (log is null)
             throw new NotFoundException($"Delivery log {logId} not found");
 
-        await dispatcher.EnqueueWorkItemAsync(new WebhookDeliveryWorkItem(
-            log.WebhookId, log.Id, log.Webhook.Url, log.Webhook.Secret, log.Payload));
+        db.WebhookDeliveryLogs.Add(new WebhookDeliveryLog
+        {
+            WebhookId = log.WebhookId,
+            EventType = log.EventType,
+            Payload = log.Payload,
+            AttemptNumber = 0,
+            NextRetryAt = DateTime.UtcNow
+        });
+        await db.SaveChangesAsync();
     }
 }

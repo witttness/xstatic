@@ -27,6 +27,8 @@ public class ClientItemsController(
         [FromQuery] int page = 1,
         [FromQuery] int page_size = 20)
     {
+        if (page < 1 || page_size < 1 || page_size > 100 || page - 1 > int.MaxValue / page_size)
+            return BadRequest(new ProblemDetails { Status = 400, Title = "Invalid paging parameters" });
         var collection = await collectionService.GetBySlugAsync(CurrentApp.Id, collection_slug);
         var (items, total) = await itemService.GetForCollectionAsync(collection.Id, page, page_size);
         return Ok(new PagedResult<ItemDto>(
@@ -70,6 +72,8 @@ public class ClientItemsController(
     {
         var collection = await collectionService.GetBySlugAsync(CurrentApp.Id, collection_slug);
         var item = await itemService.GetByIdAsync(collection.Id, id);
+        if (AppUserId is null || item.AppUserId != AppUserId)
+            throw new ForbiddenException("Only the Item owner can update it");
         var updated = await itemService.UpdateAsync(item, req.Data, collection.Schema, CurrentApp.Id);
         return Ok(updated.ToDto());
     }
@@ -83,6 +87,8 @@ public class ClientItemsController(
     {
         var collection = await collectionService.GetBySlugAsync(CurrentApp.Id, collection_slug);
         var item = await itemService.GetByIdAsync(collection.Id, id);
+        if (AppUserId is null || item.AppUserId != AppUserId)
+            throw new ForbiddenException("Only the Item owner can delete it");
         await itemService.DeleteAsync(item, attachmentService, CurrentApp.Id);
         return NoContent();
     }

@@ -15,6 +15,7 @@ public class WebhookDeliveryLogConfiguration : IEntityTypeConfiguration<WebhookD
         builder.Property(l => l.Payload).IsRequired().HasColumnType("jsonb");
         builder.Property(l => l.ResponseBody).HasMaxLength(4096);
         builder.HasIndex(l => l.NextRetryAt);
+        builder.HasIndex(l => new { l.SucceededAt, l.NextRetryAt, l.ClaimedUntil });
         builder.HasIndex(l => l.CreatedAt);
         builder.HasOne(l => l.Webhook)
                .WithMany(w => w.DeliveryLogs)

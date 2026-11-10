@@ -17,7 +17,14 @@ public class WebhookDeliveryWorker(
     {
         await foreach (var workItem in dispatcher.Reader.ReadAllAsync(stoppingToken))
         {
-            _ = ProcessAsync(workItem, stoppingToken);
+            try
+            {
+                await ProcessAsync(workItem, stoppingToken);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Webhook processing failed for {LogId}: {ErrorType}", workItem.LogId, ex.GetType().Name);
+            }
         }
     }
 
@@ -29,7 +36,7 @@ public class WebhookDeliveryWorker(
         var log = await db.WebhookDeliveryLogs
             .Include(l => l.Webhook)
             .FirstOrDefaultAsync(l => l.Id == item.LogId, ct);
-        if (log is null) return;
+        if (log is null || log.SucceededAt is not null) return;
 
         var client = httpClientFactory.CreateClient("webhook");
         var signature = payloadBuilder.ComputeSignature(item.Secret, item.Payload);
@@ -42,42 +49,44 @@ public class WebhookDeliveryWorker(
 
             using var response = await client.SendAsync(request, ct);
             log.StatusCode = (int)response.StatusCode;
-            log.ResponseBody = (await response.Content.ReadAsStringAsync(ct))[..Math.Min(4096,
-                (await response.Content.ReadAsStringAsync(ct)).Length)];
+            log.ResponseBody = null;
 
             if (response.IsSuccessStatusCode)
             {
                 log.SucceededAt = DateTime.UtcNow;
+                log.NextRetryAt = null;
+                log.ClaimedUntil = null;
             }
             else
             {
-                await ScheduleRetryOrDeactivate(db, log, log.Webhook);
+                ScheduleRetryOrDeactivate(log, log.Webhook);
             }
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Webhook delivery failed for {LogId}", item.LogId);
+            logger.LogWarning("Webhook delivery failed for {LogId}: {ErrorType}", item.LogId, ex.GetType().Name);
             log.StatusCode = null;
-            log.ResponseBody = ex.Message[..Math.Min(4096, ex.Message.Length)];
-            await ScheduleRetryOrDeactivate(db, log, log.Webhook);
+            log.ResponseBody = null;
+            ScheduleRetryOrDeactivate(log, log.Webhook);
         }
 
         await db.SaveChangesAsync(ct);
     }
 
-    private static async Task ScheduleRetryOrDeactivate(AppDbContext db,
+    private static void ScheduleRetryOrDeactivate(
         Domain.Entities.WebhookDeliveryLog log,
         Domain.Entities.Webhook webhook)
     {
+        log.ClaimedUntil = null;
         if (log.AttemptNumber >= 5)
         {
             webhook.IsActive = false;
+            log.NextRetryAt = null;
         }
         else
         {
             var delayMinutes = RetryDelaysMinutes[log.AttemptNumber - 1];
             log.NextRetryAt = DateTime.UtcNow.AddMinutes(delayMinutes);
         }
-        await Task.CompletedTask;
     }
 }

@@ -19,7 +19,10 @@ public class AppsController(AppService appService) : ControllerBase
     public async Task<ActionResult<List<AppDto>>> List()
     {
         var apps = await appService.GetForUserAsync(CurrentUserId);
-        return Ok(apps.Select(a => a.ToDto()).ToList());
+        var result = new List<AppDto>();
+        foreach (var app in apps)
+            result.Add(app.ToDto(await appService.CanManageItemsAsync(app, CurrentUserId)));
+        return Ok(result);
     }
 
     [HttpPost]
@@ -27,13 +30,14 @@ public class AppsController(AppService appService) : ControllerBase
     {
         var (app, apiKey) = await appService.CreateAsync(CurrentUserId, req.Name, req.Slug);
         return CreatedAtAction(nameof(Get), new { app_slug = app.Slug },
-            new CreateAppResponse(app.ToDto(), apiKey));
+            new CreateAppResponse(app.ToDto(canManageItems: true), apiKey));
     }
 
     [HttpGet("{app_slug}")]
     [Authorize(Policy = PolicyNames.AppAnyAccess)]
-    public ActionResult<AppDto> Get([FromRoute] string app_slug)
-        => Ok(CurrentApp.ToDto());
+    public async Task<ActionResult<AppDto>> Get([FromRoute] string app_slug)
+        => Ok(CurrentApp.ToDto(
+            await appService.CanManageItemsAsync(CurrentApp, CurrentUserId)));
 
     [HttpPut("{app_slug}")]
     [Authorize(Policy = PolicyNames.AppOwnerOrAdmin)]
@@ -51,7 +55,7 @@ public class AppsController(AppService appService) : ControllerBase
         var app = await appService.UpdateAsync(
             CurrentApp, req.Name, req.AllowedOrigins,
             req.MaxFileSizeMb, req.MaxAttachmentsPerItem, req.StorageQuotaGb);
-        return Ok(app.ToDto());
+        return Ok(app.ToDto(canManageItems: true));
     }
 
     private static bool IsValidOrigin(string origin) =>

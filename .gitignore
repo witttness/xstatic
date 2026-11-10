@@ -21,6 +21,7 @@ bin/
 obj/
 **/bin/
 **/obj/
+**/bin\\Debug/
 out/
 publish/
 artifacts/

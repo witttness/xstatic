@@ -12,6 +12,7 @@ public class ItemConfiguration : IEntityTypeConfiguration<Item>
         builder.HasKey(i => i.Id);
         builder.Property(i => i.Id).HasDefaultValueSql("gen_random_uuid()");
         builder.Property(i => i.Data).IsRequired().HasColumnType("jsonb");
+        builder.Property(i => i.Version).IsRequired().HasDefaultValue(1).IsConcurrencyToken();
         builder.HasIndex(i => i.CollectionId);
         builder.HasIndex(i => i.AppUserId);
         builder.HasOne(i => i.Collection)

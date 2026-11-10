@@ -1,5 +1,6 @@
 using Extatic.Api.Data;
 using Extatic.Api.Domain.Entities;
+using Extatic.Api.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Extatic.Api.Services;
@@ -23,6 +24,15 @@ public class AppService(AppDbContext db)
     {
         var app = await db.Apps.FirstOrDefaultAsync(a => a.Slug == slug);
         return app ?? throw new NotFoundException($"App '{slug}' not found");
+    }
+
+    public async Task<bool> CanManageItemsAsync(App app, Guid userId)
+    {
+        if (app.OwnerId == userId) return true;
+        return await db.Collaborators.AnyAsync(c => c.AppId == app.Id
+            && c.UserId == userId
+            && c.AcceptedAt != null
+            && c.Role >= CollaboratorRole.Editor);
     }
 
     public async Task<(App App, string RawApiKey)> CreateAsync(Guid ownerId, string name, string slug)

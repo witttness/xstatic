@@ -9,6 +9,7 @@ export interface App {
   storage_quota_gb: number;
   created_at: string;
   updated_at: string;
+  can_manage_items: boolean;
 }
 
 export interface CreateAppRequest {

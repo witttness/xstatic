@@ -42,6 +42,21 @@ export const routes: Routes = [
         data: { title: 'New Collection' },
       },
       {
+        path: 'apps/:appSlug/collections/:collectionSlug/items/new',
+        loadComponent: () => import('./features/items/item-editor/item-editor.component').then(m => m.ItemEditorComponent),
+        data: { title: 'New Item' },
+      },
+      {
+        path: 'apps/:appSlug/collections/:collectionSlug/items/:itemId',
+        loadComponent: () => import('./features/items/item-editor/item-editor.component').then(m => m.ItemEditorComponent),
+        data: { title: 'Item' },
+      },
+      {
+        path: 'apps/:appSlug/collections/:collectionSlug/items',
+        loadComponent: () => import('./features/items/items-list/items-list.component').then(m => m.ItemsListComponent),
+        data: { title: 'Items' },
+      },
+      {
         path: 'apps/:appSlug/collections/:slug',
         loadComponent: () =>
           import('./features/collections/collection-form/collection-form.component').then(m => m.CollectionFormComponent),
