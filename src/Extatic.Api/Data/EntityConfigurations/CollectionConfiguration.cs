@@ -26,10 +26,5 @@ public class CollectionConfiguration : IEntityTypeConfiguration<Collection>
                .WithMany()
                .HasForeignKey(c => c.SourceSchemaId)
                .OnDelete(DeleteBehavior.SetNull);
-        // Not part of the INSERT (CollectionService.CreateAsync writes provenance with a follow-up UPDATE in the
-        // same transaction), so code that inserts collections into a database migrated only to an older
-        // schema (ItemMigrationTests) keeps working.
-        builder.Property(c => c.SourceSchemaId).Metadata.SetBeforeSaveBehavior(PropertySaveBehavior.Ignore);
-        builder.Property(c => c.SourceSchemaVersion).Metadata.SetBeforeSaveBehavior(PropertySaveBehavior.Ignore);
     }
 }

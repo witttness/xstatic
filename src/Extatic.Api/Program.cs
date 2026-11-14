@@ -173,7 +173,12 @@ builder.Services.AddControllers()
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    // Feature modules reuse DTO names (e.g. RegisterRequest in Events and Authentication);
+    // namespace-qualified ids keep the OpenAPI document generatable.
+    options.CustomSchemaIds(type => (type.FullName ?? type.Name).Replace('+', '.'));
+});
 
 var app = builder.Build();
 

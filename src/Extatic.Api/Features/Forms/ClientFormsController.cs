@@ -27,6 +27,7 @@ public class ClientFormsController(FormSubmissionService submissions) : ClientCo
     /// </summary>
     [HttpPost("{slug}/submissions")]
     [EnableRateLimiting(RateLimitPolicyNames.ClientAnonymousWrites)]
+    [DisableFormValueModelBinding]
     public async Task<IActionResult> Submit([FromRoute] string slug, CancellationToken ct)
     {
         var body = await ReadBodyAsync(ct);

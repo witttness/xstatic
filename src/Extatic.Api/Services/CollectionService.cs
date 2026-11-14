@@ -53,15 +53,10 @@ public class CollectionService(AppDbContext db)
             return collection;
         }
 
-        // Provenance columns are excluded from INSERT (see CollectionConfiguration): write them with an
-        // UPDATE in the same transaction.
-        await using var tx = await db.Database.BeginTransactionAsync();
-        db.Collections.Add(collection);
-        await db.SaveChangesAsync();
         collection.SourceSchemaId = source.Id;
         collection.SourceSchemaVersion = source.Version;
+        db.Collections.Add(collection);
         await db.SaveChangesAsync();
-        await tx.CommitAsync();
         return collection;
     }
 

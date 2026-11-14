@@ -490,6 +490,24 @@ Invite other Extatic users to help manage your App. Each collaborator is assigne
 
 ---
 
+## Feature Modules
+
+Each feature is tenant-scoped (per App) and documented in `docs/features/`:
+
+| Feature | What it provides | Docs |
+|---|---|---|
+| Forms | Submission validation, storage, notifications | [forms](docs/features/forms.md) |
+| Events | Registration with capacity limits and waitlists | [events](docs/features/events.md) |
+| Comments | Moderated comments | [comments](docs/features/comments.md) |
+| Authentication | Email/password registration and login for AppUsers | [authentication](docs/features/authentication.md) |
+| Members | Membership plans and lifecycle | [members](docs/features/members.md) |
+| Donations | Stripe Checkout via each tenant's own account | [donations](docs/features/donations.md) |
+| Search | PostgreSQL full-text indexing and querying | [search](docs/features/search.md) |
+| Scheduling | Appointment booking | [scheduling](docs/features/scheduling.md) |
+| JSON Schema Library | Global and per-App reusable schemas for Collections | [schema-library](docs/features/schema-library.md) |
+
+Conventions for adding a feature: [docs/feature-modules.md](docs/feature-modules.md).
+
 ## Documentation
 
 For the full project requirements including entity schemas, authorization rules, and non-functional requirements, see [PROJECT-REQUIREMENTS.md](./PROJECT-REQUIREMENTS.md).

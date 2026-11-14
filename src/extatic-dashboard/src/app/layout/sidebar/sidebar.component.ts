@@ -15,6 +15,7 @@ export interface NavLink {
 /** Core app-scoped pages (Settings is rendered last, after the feature links). */
 export const CORE_APP_LINKS: NavLink[] = [
   { label: 'Collections', path: 'collections' },
+  { label: 'Schemas', path: 'schemas' },
   { label: 'Team', path: 'collaborators' },
   { label: 'Users', path: 'appusers' },
   { label: 'Webhooks', path: 'webhooks' },
