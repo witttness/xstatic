@@ -13,9 +13,13 @@ public static class DtoMappers
             a.MaxFileSizeMb, a.MaxAttachmentsPerItem, a.StorageQuotaGb,
             a.CreatedAt, a.UpdatedAt, canManageItems);
 
-    public static CollectionDto ToDto(this Collection c) =>
+    /// <param name="sourceSchemaName">Schema Library: name of the source schema when still visible to the caller.</param>
+    /// <param name="sourceSchemaLatestVersion">Schema Library: its current version when still visible.</param>
+    public static CollectionDto ToDto(this Collection c, string? sourceSchemaName = null, int? sourceSchemaLatestVersion = null) =>
         new(c.Id, c.AppId, c.Name, c.Slug, c.Schema,
-            c.AttachmentsEnabled, c.AllowedAttachmentTypes, c.CreatedAt, c.UpdatedAt);
+            c.AttachmentsEnabled, c.AllowedAttachmentTypes, c.CreatedAt, c.UpdatedAt,
+            c.SourceSchemaId, c.SourceSchemaId is null ? null : c.SourceSchemaVersion,
+            sourceSchemaName, sourceSchemaLatestVersion);
 
     public static ItemDto ToDto(this Item i) =>
         new(i.Id, i.CollectionId, i.AppUserId,
@@ -27,7 +31,8 @@ public static class DtoMappers
         new(a.Id, a.ItemId, a.AppUserId, a.Filename, a.ContentType, a.SizeBytes, a.Url, a.CreatedAt);
 
     public static AppUserDto ToDto(this AppUser u) =>
-        new(u.Id, u.AppId, u.Provider, u.Email, u.DisplayName, u.AvatarUrl, u.LastLoginAt, u.CreatedAt);
+        new(u.Id, u.AppId, u.Provider, u.Email, u.DisplayName, u.AvatarUrl, u.LastLoginAt, u.CreatedAt,
+            u.DisabledAt is not null, u.EmailVerifiedAt is not null);
 
     public static CollaboratorDto ToDto(this Collaborator c) =>
         new(c.Id, c.AppId, c.UserId, c.User?.Email ?? "", c.User?.Name ?? "",

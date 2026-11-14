@@ -8,7 +8,9 @@ public record AppUserDto(
     string? DisplayName,
     string? AvatarUrl,
     DateTime? LastLoginAt,
-    DateTime CreatedAt);
+    DateTime CreatedAt,
+    bool Disabled = false,
+    bool EmailVerified = false);
 
 public record DevTokenRequest(string? Email, string? DisplayName);
 public record DevTokenResponse(AppUserDto User, string Token);

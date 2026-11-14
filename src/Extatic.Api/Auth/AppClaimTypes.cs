@@ -7,4 +7,5 @@ public static class AppClaimTypes
     public const string AppUserId = "extatic:app_user_id";
     public const string AppId = "extatic:app_id";
     public const string Provider = "extatic:provider";
+    public const string ServerKey = "extatic:server_key";
 }

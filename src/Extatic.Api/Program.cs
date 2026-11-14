@@ -18,6 +18,9 @@ using Microsoft.IdentityModel.Tokens;
 using Extatic.Api.Auth.Cors;
 using Extatic.Api.Auth.RateLimiting;
 using Microsoft.AspNetCore.Cors.Infrastructure;
+using Extatic.Api.Modules;
+using Extatic.Api.Notifications;
+using Extatic.Api.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,6 +48,8 @@ builder.Services.AddAuthentication(options =>
 })
 .AddScheme<AuthenticationSchemeOptions, OAuthProxyAuthenticationHandler>(AuthSchemes.OAuthProxy, _ => { })
 .AddScheme<AuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(AuthSchemes.ApiKey, _ => { })
+// Never selected by SmartSelector: only used through PolicyNames.AppServerKey.
+.AddScheme<AuthenticationSchemeOptions, ServerKeyAuthenticationHandler>(AuthSchemes.ServerKey, _ => { })
 .AddJwtBearer(AuthSchemes.AppUser, options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
@@ -89,11 +94,16 @@ builder.Services.AddAuthorization(options =>
         policy.RequireAuthenticatedUser()
               .AddAuthenticationSchemes(AuthSchemes.AppUser)
               .AddRequirements(new AppUserAppRequirement()));
+
+    options.AddFeatureFoundationPolicies();
 });
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IAuthorizationHandler, AppRoleHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, AppUserAppHandler>();
+builder.Services.AddSingleton<IPlatformAdminService, PlatformAdminService>();
+builder.Services.AddSingleton<IAuthorizationHandler, PlatformAdminHandler>();
+builder.Services.AddSingleton<AppUserTokenService>();
 
 // Services
 builder.Services.AddScoped<UserService>();
@@ -117,6 +127,13 @@ builder.Services.AddHostedService<WebhookDeliveryWorker>();
 builder.Services.AddHostedService<WebhookRetryWorker>();
 builder.Services.AddHostedService<WebhookLogCleanupWorker>();
 
+// Email outbox, tenant secret protection
+builder.Services.AddEmailNotifications(builder.Configuration);
+builder.Services.AddTenantSecretProtection();
+
+// Feature modules (Features/<X>/<X>Module.cs) + WebhookEventCatalog
+builder.Services.AddFeatureModules(builder.Configuration);
+
 // HTTP client for webhook delivery
 builder.Services.AddHttpClient("webhook", client =>
 {
@@ -135,6 +152,7 @@ builder.Services.AddRateLimiter(options =>
     options.AddPolicy<string, ClientWritesPolicy>(RateLimitPolicyNames.ClientWrites);
     options.AddPolicy<string, ClientReadsPolicy>(RateLimitPolicyNames.ClientReads);
     options.AddPolicy<string, ClientUploadsPolicy>(RateLimitPolicyNames.ClientUploads);
+    options.AddPolicy<string, ClientAnonymousWritesPolicy>(RateLimitPolicyNames.ClientAnonymousWrites);
 });
 
 // CORS
@@ -155,7 +173,12 @@ builder.Services.AddControllers()
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    // Feature modules reuse DTO names (e.g. RegisterRequest in Events and Authentication);
+    // namespace-qualified ids keep the OpenAPI document generatable.
+    options.CustomSchemaIds(type => (type.FullName ?? type.Name).Replace('+', '.'));
+});
 
 var app = builder.Build();
 

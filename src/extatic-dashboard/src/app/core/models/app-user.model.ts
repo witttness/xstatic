@@ -7,4 +7,7 @@ export interface AppUser {
   avatar_url: string | null;
   last_login_at: string | null;
   created_at: string;
+  /** Disabled by an owner/admin: cannot sign in or refresh. */
+  disabled?: boolean;
+  email_verified?: boolean;
 }

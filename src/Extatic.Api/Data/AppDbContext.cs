@@ -1,9 +1,16 @@
 using Extatic.Api.Domain.Entities;
+using Extatic.Api.Notifications;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Extatic.Api.Data;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+/// <summary>
+/// Partial: each feature adds its DbSets in <c>Data/AppDbContext.&lt;Feature&gt;.cs</c>. Entity
+/// configurations are picked up automatically from any <c>IEntityTypeConfiguration&lt;T&gt;</c> in this assembly.
+/// </summary>
+public partial class AppDbContext(DbContextOptions<AppDbContext> options)
+    : DbContext(options), IDataProtectionKeyContext
 {
     public DbSet<User> Users => Set<User>();
     public DbSet<App> Apps => Set<App>();
@@ -14,6 +21,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Webhook> Webhooks => Set<Webhook>();
     public DbSet<WebhookDeliveryLog> WebhookDeliveryLogs => Set<WebhookDeliveryLog>();
     public DbSet<Attachment> Attachments => Set<Attachment>();
+    public DbSet<EmailOutboxMessage> EmailOutbox => Set<EmailOutboxMessage>();
+    public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

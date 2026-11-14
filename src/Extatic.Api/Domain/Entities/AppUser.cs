@@ -1,6 +1,6 @@
 namespace Extatic.Api.Domain.Entities;
 
-public class AppUser
+public class AppUser : IAppScoped
 {
     public Guid Id { get; set; }
     public Guid AppId { get; set; }
@@ -11,6 +11,10 @@ public class AppUser
     public string? AvatarUrl { get; set; }
     public string? Metadata { get; set; }
     public DateTime? LastLoginAt { get; set; }
+    /// <summary>Set when a platform admin disables the user: no login or refresh (Authentication feature).</summary>
+    public DateTime? DisabledAt { get; set; }
+    /// <summary>When the user proved ownership of <see cref="Email"/> (Authentication feature).</summary>
+    public DateTime? EmailVerifiedAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 

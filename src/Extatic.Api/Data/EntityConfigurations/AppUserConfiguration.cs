@@ -16,6 +16,8 @@ public class AppUserConfiguration : IEntityTypeConfiguration<AppUser>
         builder.Property(u => u.Email).HasMaxLength(256);
         builder.Property(u => u.DisplayName).HasMaxLength(256);
         builder.Property(u => u.Metadata).HasColumnType("jsonb");
+        builder.Property(u => u.DisabledAt);
+        builder.Property(u => u.EmailVerifiedAt);
         builder.HasIndex(u => new { u.AppId, u.Provider, u.ProviderUserId }).IsUnique();
         builder.HasOne(u => u.App)
                .WithMany(a => a.AppUsers)

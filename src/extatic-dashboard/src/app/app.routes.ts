@@ -2,6 +2,15 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { ShellComponent } from './layout/shell/shell.component';
 import { UnauthorizedComponent } from './features/unauthorized/unauthorized.component';
+import { FORMS_ROUTES } from './features/forms/forms.routes';
+import { EVENTS_ROUTES } from './features/events/events.routes';
+import { COMMENTS_ROUTES } from './features/comments/comments.routes';
+import { AUTHENTICATION_ROUTES } from './features/authentication/authentication.routes';
+import { MEMBERS_ROUTES } from './features/members/members.routes';
+import { DONATIONS_ROUTES } from './features/donations/donations.routes';
+import { SEARCH_ROUTES } from './features/search/search.routes';
+import { SCHEDULING_ROUTES } from './features/scheduling/scheduling.routes';
+import { SCHEMA_LIBRARY_ROUTES } from './features/schema-library/schema-library.routes';
 
 export const routes: Routes = [
   {
@@ -29,6 +38,17 @@ export const routes: Routes = [
         redirectTo: 'apps/:appSlug/collections',
         pathMatch: 'full',
       },
+      // Feature modules: each owns its route file. Listed before the generic app routes so
+      // none of them can be shadowed by a parameterised core route.
+      ...FORMS_ROUTES,
+      ...EVENTS_ROUTES,
+      ...COMMENTS_ROUTES,
+      ...AUTHENTICATION_ROUTES,
+      ...MEMBERS_ROUTES,
+      ...DONATIONS_ROUTES,
+      ...SEARCH_ROUTES,
+      ...SCHEDULING_ROUTES,
+      ...SCHEMA_LIBRARY_ROUTES,
       {
         path: 'apps/:appSlug/collections',
         loadComponent: () =>

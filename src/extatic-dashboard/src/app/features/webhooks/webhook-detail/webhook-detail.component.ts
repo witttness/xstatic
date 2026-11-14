@@ -1,17 +1,13 @@
 import { Component, Input, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ApiService } from '../../../core/services/api.service';
+import { WebhookEventsService } from '../../../core/services/webhook-events.service';
 import { Webhook, WebhookEvent } from '../../../core/models/webhook.model';
 import { PageHeaderComponent } from '../../../shared/page-header/page-header.component';
 import { ButtonComponent } from '../../../shared/button/button.component';
 import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading-spinner.component';
-
-const EVENT_GROUPS: { label: string; events: WebhookEvent[] }[] = [
-  { label: 'Items', events: ['item.created', 'item.updated', 'item.deleted'] },
-  { label: 'AppUsers', events: ['appuser.created', 'appuser.updated'] },
-  { label: 'Attachments', events: ['attachment.created', 'attachment.deleted'] },
-];
 
 @Component({
   selector: 'app-webhook-detail',
@@ -32,7 +28,7 @@ const EVENT_GROUPS: { label: string; events: WebhookEvent[] }[] = [
 
         <div>
           <label class="block text-xs font-medium text-text-muted uppercase tracking-wider mb-2">Events</label>
-          @for (group of eventGroups; track group.label) {
+          @for (group of eventGroups(); track group.label) {
             <div class="mb-3">
               <div class="text-xs text-text-muted mb-1">{{ group.label }}</div>
               @for (event of group.events; track event) {
@@ -80,7 +76,8 @@ export class WebhookDetailComponent implements OnInit {
   private router = inject(Router);
   private fb = inject(FormBuilder);
 
-  eventGroups = EVENT_GROUPS;
+  private webhookEvents = inject(WebhookEventsService);
+  eventGroups = toSignal(this.webhookEvents.groups$, { initialValue: [] });
   webhook = signal<Webhook | null>(null);
   loading = signal(true);
   saving = signal(false);
@@ -105,6 +102,13 @@ export class WebhookDetailComponent implements OnInit {
     });
   }
 
+  /** Drops events no longer in the catalog (the API rejects unknown event types). */
+  private knownSelectedEvents(): WebhookEvent[] {
+    const known = new Set(this.eventGroups().flatMap(g => g.events));
+    const selected = Array.from(this.selectedEvents);
+    return known.size === 0 ? selected : selected.filter(e => known.has(e));
+  }
+
   toggleEvent(event: WebhookEvent, checked: boolean) {
     if (checked) this.selectedEvents.add(event);
     else this.selectedEvents.delete(event);
@@ -118,7 +122,7 @@ export class WebhookDetailComponent implements OnInit {
     const { url, is_active } = this.form.value;
     this.api.put<Webhook>(`/apps/${this.appSlug}/webhooks/${this.id}`, {
       url,
-      events: Array.from(this.selectedEvents),
+      events: this.knownSelectedEvents(),
       is_active,
     }).subscribe({
       next: w => {

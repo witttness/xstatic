@@ -17,6 +17,9 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
             ForbiddenException => (403, "Forbidden", (object?)null),
             ConflictException => (409, "Conflict", (object?)null),
             FileTooLargeException => (413, "Payload Too Large", (object?)null),
+            BadRequestException => (400, "Bad Request", (object?)null),
+            UnauthorizedException => (401, "Unauthorized", (object?)null),
+            TooManyRequestsException => (429, "Too Many Requests", (object?)null),
             ValidationException ve => (422, "Validation Failed",
                 new { errors = ve.Errors.Select(e => new { pointer = e.Pointer, message = e.Message }) }),
             _ => (500, "Internal Server Error", (object?)null)
@@ -35,6 +38,9 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
 
         if (extensions is not null)
             problem.Extensions["errors"] = extensions;
+
+        if (exception is TooManyRequestsException { RetryAfter: { } retryAfter })
+            context.Response.Headers.RetryAfter = ((int)Math.Ceiling(retryAfter.TotalSeconds)).ToString();
 
         context.Response.StatusCode = statusCode;
         await context.Response.WriteAsJsonAsync(problem, ct);

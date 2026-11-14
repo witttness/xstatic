@@ -11,7 +11,7 @@ namespace Extatic.Api.Controllers.Platform;
 [ApiController]
 [Route("api/auth")]
 [Authorize(Policy = PolicyNames.PlatformUser)]
-public class AuthController(AppDbContext db) : ControllerBase
+public class AuthController(AppDbContext db, IPlatformAdminService platformAdmins) : ControllerBase
 {
     [HttpGet("me")]
     public async Task<ActionResult<UserDto>> GetMe()
@@ -23,6 +23,6 @@ public class AuthController(AppDbContext db) : ControllerBase
         var user = await db.Users.FindAsync(userId);
         if (user is null) return NotFound();
 
-        return Ok(user.ToDto());
+        return Ok(user.ToDto() with { IsAdmin = platformAdmins.IsAdmin(user.Email) });
     }
 }
