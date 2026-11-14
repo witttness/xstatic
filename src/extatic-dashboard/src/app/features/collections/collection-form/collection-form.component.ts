@@ -6,11 +6,25 @@ import { Collection } from '../../../core/models/collection.model';
 import { PageHeaderComponent } from '../../../shared/page-header/page-header.component';
 import { ButtonComponent } from '../../../shared/button/button.component';
 import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading-spinner.component';
+import { BadgeComponent } from '../../../shared/badge/badge.component';
+import { PickedSchema, SchemaPickerComponent } from '../../schema-library/schema-picker/schema-picker.component';
+import { DiffLine, LineDiffComponent, lineDiff } from '../../schema-library/line-diff';
+import { AvailableSchemaDetail, LibrarySchemaVersion, prettyJson, sameJson } from '../../schema-library/schema-library.models';
+
+/** Schema Library provenance shown on the form (the content itself is always a copy). */
+export interface SchemaSource {
+  id: string;
+  /** Null when the source schema is no longer visible to this app (or was deleted). */
+  name: string | null;
+  version: number;
+  latestVersion: number | null;
+}
 
 @Component({
   selector: 'app-collection-form',
   standalone: true,
-  imports: [ReactiveFormsModule, PageHeaderComponent, ButtonComponent, LoadingSpinnerComponent],
+  imports: [ReactiveFormsModule, PageHeaderComponent, ButtonComponent, LoadingSpinnerComponent, BadgeComponent,
+    SchemaPickerComponent, LineDiffComponent],
   template: `
     <app-page-header [title]="isEdit ? 'Edit Collection' : 'New Collection'" />
 
@@ -48,10 +62,28 @@ import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading
             <label class="block text-xs font-medium text-text-muted uppercase tracking-wider">
               JSON Schema <span class="normal-case font-normal text-text-muted">(optional)</span>
             </label>
-            <button type="button" (click)="validateSchema()"
-              class="text-xs text-accent hover:underline">Validate JSON</button>
+            <div class="flex items-center gap-3">
+              <button type="button" (click)="pickerOpen.set(true)"
+                class="text-xs text-accent hover:underline">Choose from library</button>
+              <button type="button" (click)="validateSchema()"
+                class="text-xs text-accent hover:underline">Validate JSON</button>
+            </div>
           </div>
-          <textarea formControlName="schema" rows="8"
+          @if (source(); as src) {
+            <div class="flex flex-wrap items-center gap-2 mb-2 text-xs" data-testid="schema-source">
+              @if (src.name) {
+                <span class="text-text-muted">Based on <span class="text-text-primary">{{ src.name }}</span> v{{ src.version }}</span>
+              } @else {
+                <span class="text-text-muted">Based on a library schema (v{{ src.version }}) that is no longer available</span>
+              }
+              @if (sourceModified()) { <app-badge variant="warning">modified</app-badge> }
+              @if (src.latestVersion !== null && src.latestVersion > src.version) {
+                <button type="button" (click)="reviewUpdate()" class="text-accent hover:underline">Update available (v{{ src.latestVersion }})</button>
+              }
+              <button type="button" (click)="detach()" class="text-text-muted hover:text-text-primary underline">Detach</button>
+            </div>
+          }
+          <textarea formControlName="schema" (input)="onSchemaEdited()" rows="8"
             class="w-full bg-background border border-border px-3 py-2 text-sm text-text-primary font-mono focus:border-accent focus:outline-none resize-y"
             placeholder='{ "type": "object", "properties": { ... } }'></textarea>
           @if (schemaError()) { <p class="text-xs text-error mt-1">{{ schemaError() }}</p> }
@@ -85,6 +117,25 @@ import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading
         </div>
       </form>
     }
+
+    @if (pickerOpen()) {
+      <app-schema-picker [appSlug]="appSlug" (picked)="usePicked($event)" (cancelled)="pickerOpen.set(false)" />
+    }
+
+    @if (pendingUpdate(); as upd) {
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/60" (click)="pendingUpdate.set(null)"></div>
+        <div class="relative bg-surface border border-border w-full max-w-3xl p-6 z-10" role="dialog" aria-label="Review schema update">
+          <h3 class="text-base font-semibold text-text-primary mb-1">Update to {{ upd.name }} v{{ upd.version }}</h3>
+          <p class="text-sm text-text-muted mb-3">Changes from the current schema in this form. Applying replaces the schema text; it only affects Items saved afterwards.</p>
+          <app-line-diff [lines]="updateDiff()" />
+          <div class="flex justify-end gap-2 mt-4">
+            <app-button variant="secondary" (click)="pendingUpdate.set(null)">Cancel</app-button>
+            <app-button (click)="applyUpdate()">Apply update</app-button>
+          </div>
+        </div>
+      </div>
+    }
   `,
 })
 export class CollectionFormComponent implements OnInit {
@@ -111,6 +162,15 @@ export class CollectionFormComponent implements OnInit {
   schemaError = signal<string | null>(null);
   schemaValid = signal(false);
 
+  // Schema Library provenance
+  pickerOpen = signal(false);
+  source = signal<SchemaSource | null>(null);
+  sourceModified = signal(false);
+  pendingUpdate = signal<AvailableSchemaDetail | null>(null);
+  updateDiff = signal<DiffLine[]>([]);
+  /** The loaded collection had provenance; saving without one must explicitly detach. */
+  private hadSource = false;
+
   ngOnInit() {
     if (this.isEdit) {
       this.loadingCollection.set(true);
@@ -124,11 +184,68 @@ export class CollectionFormComponent implements OnInit {
             allowed_attachment_types: col.allowed_attachment_types.join(', '),
           });
           this.form.get('slug')!.disable();
+          this.loadSource(col);
           this.loadingCollection.set(false);
         },
         error: () => this.loadingCollection.set(false),
       });
     }
+  }
+
+  private loadSource(col: Collection) {
+    if (!col.source_schema_id || col.source_schema_version == null) return;
+    this.hadSource = true;
+    this.source.set({
+      id: col.source_schema_id,
+      name: col.source_schema_name ?? null,
+      version: col.source_schema_version,
+      latestVersion: col.source_schema_latest_version ?? null,
+    });
+    if (!col.source_schema_name) return;
+    // Mark "modified" when the stored schema differs from the version it was copied from.
+    this.api.get<LibrarySchemaVersion>(
+      `/apps/${this.appSlug}/schemas/available/${col.source_schema_id}/versions/${col.source_schema_version}`,
+    ).subscribe({
+      next: v => this.sourceModified.set(!sameJson(this.form.get('schema')!.value ?? '', v.schema)),
+      error: () => {},
+    });
+  }
+
+  usePicked(p: PickedSchema) {
+    this.pickerOpen.set(false);
+    this.form.get('schema')!.setValue(p.schemaText);
+    this.source.set({ id: p.id, name: p.name, version: p.version, latestVersion: p.version });
+    this.sourceModified.set(false);
+    this.schemaError.set(null);
+    this.schemaValid.set(false);
+  }
+
+  onSchemaEdited() {
+    if (this.source()) this.sourceModified.set(true);
+  }
+
+  detach() {
+    this.source.set(null);
+    this.sourceModified.set(false);
+  }
+
+  reviewUpdate() {
+    const src = this.source();
+    if (!src) return;
+    this.api.get<AvailableSchemaDetail>(`/apps/${this.appSlug}/schemas/available/${src.id}`).subscribe({
+      next: latest => {
+        this.updateDiff.set(lineDiff(this.form.get('schema')!.value ?? '', prettyJson(latest.schema)));
+        this.pendingUpdate.set(latest);
+      },
+      error: () => this.error.set('Failed to load the latest library schema.'),
+    });
+  }
+
+  applyUpdate() {
+    const latest = this.pendingUpdate();
+    if (!latest) return;
+    this.pendingUpdate.set(null);
+    this.usePicked({ id: latest.id, name: latest.name, version: latest.version, schemaText: prettyJson(latest.schema) });
   }
 
   autoSlug() {
@@ -154,13 +271,20 @@ export class CollectionFormComponent implements OnInit {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     const raw = this.form.getRawValue();
     const types = (raw.allowed_attachment_types ?? '').split(',').map(s => s.trim()).filter(Boolean);
-    const body = {
+    const src = this.source();
+    const body: Record<string, unknown> = {
       name: raw.name,
       slug: raw.slug,
       schema: raw.schema?.trim() || null,
       attachments_enabled: raw.attachments_enabled,
       allowed_attachment_types: types,
     };
+    if (src) {
+      body['source_schema_id'] = src.id;
+      body['source_schema_version'] = src.version;
+    } else if (this.isEdit && this.hadSource) {
+      body['detach_source_schema'] = true;
+    }
     this.saving.set(true);
     this.error.set(null);
 

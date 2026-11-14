@@ -9,17 +9,26 @@ public record CollectionDto(
     bool AttachmentsEnabled,
     string[] AllowedAttachmentTypes,
     DateTime CreatedAt,
-    DateTime UpdatedAt);
+    DateTime UpdatedAt,
+    Guid? SourceSchemaId = null,
+    int? SourceSchemaVersion = null,
+    string? SourceSchemaName = null,
+    int? SourceSchemaLatestVersion = null);
 
 public record CreateCollectionRequest(
     string Name,
     string Slug,
     string? Schema,
     bool AttachmentsEnabled = false,
-    string[]? AllowedAttachmentTypes = null);
+    string[]? AllowedAttachmentTypes = null,
+    Guid? SourceSchemaId = null,
+    int? SourceSchemaVersion = null);
 
 public record UpdateCollectionRequest(
     string? Name,
     string? Schema,
     bool? AttachmentsEnabled,
-    string[]? AllowedAttachmentTypes);
+    string[]? AllowedAttachmentTypes,
+    Guid? SourceSchemaId = null,
+    int? SourceSchemaVersion = null,
+    bool? DetachSourceSchema = null);
