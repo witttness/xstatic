@@ -27,7 +27,8 @@ public static class DtoMappers
         new(a.Id, a.ItemId, a.AppUserId, a.Filename, a.ContentType, a.SizeBytes, a.Url, a.CreatedAt);
 
     public static AppUserDto ToDto(this AppUser u) =>
-        new(u.Id, u.AppId, u.Provider, u.Email, u.DisplayName, u.AvatarUrl, u.LastLoginAt, u.CreatedAt);
+        new(u.Id, u.AppId, u.Provider, u.Email, u.DisplayName, u.AvatarUrl, u.LastLoginAt, u.CreatedAt,
+            u.DisabledAt is not null, u.EmailVerifiedAt is not null);
 
     public static CollaboratorDto ToDto(this Collaborator c) =>
         new(c.Id, c.AppId, c.UserId, c.User?.Email ?? "", c.User?.Name ?? "",

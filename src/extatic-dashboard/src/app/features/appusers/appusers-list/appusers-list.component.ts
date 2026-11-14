@@ -5,11 +5,14 @@ import { PageHeaderComponent } from '../../../shared/page-header/page-header.com
 import { BadgeComponent } from '../../../shared/badge/badge.component';
 import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading-spinner.component';
 import { EmptyStateComponent } from '../../../shared/empty-state/empty-state.component';
+import { ButtonComponent } from '../../../shared/button/button.component';
+import { ConfirmModalComponent } from '../../../shared/confirm-modal/confirm-modal.component';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-appusers-list',
   standalone: true,
-  imports: [PageHeaderComponent, BadgeComponent, LoadingSpinnerComponent, EmptyStateComponent],
+  imports: [PageHeaderComponent, BadgeComponent, LoadingSpinnerComponent, EmptyStateComponent, ButtonComponent, ConfirmModalComponent],
   template: `
     <app-page-header
       title="Users"
@@ -26,6 +29,7 @@ import { EmptyStateComponent } from '../../../shared/empty-state/empty-state.com
         description="AppUsers are created automatically when end-users sign in via the Client API."
       />
     } @else {
+      @if (actionError()) { <p class="text-error text-sm mb-3">{{ actionError() }}</p> }
       <div class="border border-border">
         <table class="w-full text-sm">
           <thead>
@@ -34,6 +38,8 @@ import { EmptyStateComponent } from '../../../shared/empty-state/empty-state.com
               <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Provider</th>
               <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Last Login</th>
               <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Joined</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Status</th>
+              <th class="px-4 py-3"></th>
             </tr>
           </thead>
           <tbody>
@@ -57,11 +63,42 @@ import { EmptyStateComponent } from '../../../shared/empty-state/empty-state.com
                 </td>
                 <td class="px-4 py-3 text-text-muted text-xs">{{ u.last_login_at ? formatDate(u.last_login_at) : '—' }}</td>
                 <td class="px-4 py-3 text-text-muted text-xs">{{ formatDate(u.created_at) }}</td>
+                <td class="px-4 py-3">
+                  <div class="flex flex-wrap gap-1">
+                    @if (u.disabled) {
+                      <app-badge variant="error">disabled</app-badge>
+                    } @else {
+                      <app-badge variant="success">active</app-badge>
+                    }
+                    @if (u.email_verified) {
+                      <app-badge variant="info">verified</app-badge>
+                    } @else if (u.provider === 'password') {
+                      <app-badge variant="warning">unverified</app-badge>
+                    }
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-right">
+                  @if (u.disabled) {
+                    <app-button size="sm" variant="secondary" [loading]="busyId() === u.id" (click)="setDisabled(u, false)">Enable</app-button>
+                  } @else {
+                    <app-button size="sm" variant="secondary" [loading]="busyId() === u.id" (click)="disabling.set(u)">Disable</app-button>
+                  }
+                </td>
               </tr>
             }
           </tbody>
         </table>
       </div>
+    }
+
+    @if (disabling()) {
+      <app-confirm-modal
+        title="Disable user"
+        [message]="'Disable ' + (disabling()!.email || disabling()!.display_name || 'this user') + '? They are signed out of every device (access tokens already issued remain valid until they expire) and cannot sign in until enabled again.'"
+        confirmLabel="Disable"
+        (confirmed)="setDisabled(disabling()!, true)"
+        (cancelled)="disabling.set(null)"
+      />
     }
   `,
 })
@@ -73,11 +110,33 @@ export class AppUsersListComponent implements OnInit {
   users = signal<AppUser[]>([]);
   loading = signal(true);
   error = signal<string | null>(null);
+  actionError = signal<string | null>(null);
+  busyId = signal<string | null>(null);
+  disabling = signal<AppUser | null>(null);
 
   ngOnInit() {
     this.api.get<AppUser[]>(`/apps/${this.appSlug}/appusers`).subscribe({
       next: users => { this.users.set(users); this.loading.set(false); },
       error: () => { this.error.set('Failed to load users.'); this.loading.set(false); },
+    });
+  }
+
+  setDisabled(user: AppUser, disabled: boolean) {
+    this.disabling.set(null);
+    this.busyId.set(user.id);
+    this.actionError.set(null);
+    const action = disabled ? 'disable' : 'enable';
+    this.api.post<AppUser>(`/apps/${this.appSlug}/auth/users/${user.id}/${action}`).subscribe({
+      next: updated => {
+        this.users.update(list => list.map(u => (u.id === updated.id ? updated : u)));
+        this.busyId.set(null);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.actionError.set(err.status === 403
+          ? 'Only the owner or an admin can enable or disable users.'
+          : `Failed to ${action} user.`);
+        this.busyId.set(null);
+      },
     });
   }
 
