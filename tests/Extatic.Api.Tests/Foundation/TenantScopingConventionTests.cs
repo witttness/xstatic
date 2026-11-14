@@ -25,6 +25,11 @@ public class TenantScopingConventionTests(ApiTestFixture fixture) : IClassFixtur
         typeof(Attachment),          // pre-existing; scoped via Item → Collection
         typeof(WebhookDeliveryLog),  // pre-existing; scoped via Webhook.AppId
         typeof(DataProtectionKey),   // ASP.NET Data Protection key ring (platform-wide)
+        // Schema Library: global library schemas are deliberately platform-scoped (AppId null, curated
+        // by platform admins), so these rows cannot implement IAppScoped (non-nullable AppId). App-scope
+        // rows carry their AppId and every App-scope query filters by it (see LibrarySchemaAccess).
+        typeof(Extatic.Api.Features.SchemaLibrary.LibrarySchema),
+        typeof(Extatic.Api.Features.SchemaLibrary.LibrarySchemaVersion),
     ];
 
     [Fact]

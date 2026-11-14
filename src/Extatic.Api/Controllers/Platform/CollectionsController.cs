@@ -1,6 +1,7 @@
 using Extatic.Api.Auth;
 using Extatic.Api.Domain.Entities;
 using Extatic.Api.Dtos;
+using Extatic.Api.Features.SchemaLibrary;
 using Extatic.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,15 +11,29 @@ namespace Extatic.Api.Controllers.Platform;
 [ApiController]
 [Route("api/apps/{app_slug}/collections")]
 [Authorize(Policy = PolicyNames.AppAnyAccess)]
-public class CollectionsController(CollectionService collectionService) : ControllerBase
+public class CollectionsController(CollectionService collectionService, IPlatformAdminService platformAdmins)
+    : ControllerBase
 {
     private App CurrentApp => (App)HttpContext.Items["CurrentApp"]!;
+
+    private bool IsPlatformAdmin => platformAdmins.IsAdmin(User.FindFirst(AppClaimTypes.UserEmail)?.Value);
+
+    private async Task<List<CollectionDto>> ToDtosAsync(IReadOnlyCollection<Collection> collections)
+    {
+        var sources = await collectionService.GetSourceSchemaInfoAsync(CurrentApp.Id, collections, IsPlatformAdmin);
+        return collections.Select(c =>
+            c.SourceSchemaId is { } id && sources.TryGetValue(id, out var info)
+                ? c.ToDto(info.Name, info.LatestVersion)
+                : c.ToDto()).ToList();
+    }
+
+    private async Task<CollectionDto> ToDtoAsync(Collection collection) => (await ToDtosAsync([collection]))[0];
 
     [HttpGet]
     public async Task<ActionResult<List<CollectionDto>>> List()
     {
         var collections = await collectionService.GetForAppAsync(CurrentApp.Id);
-        return Ok(collections.Select(c => c.ToDto()).ToList());
+        return Ok(await ToDtosAsync(collections));
     }
 
     [HttpPost]
@@ -27,17 +42,18 @@ public class CollectionsController(CollectionService collectionService) : Contro
     {
         var collection = await collectionService.CreateAsync(
             CurrentApp.Id, req.Name, req.Slug, req.Schema,
-            req.AttachmentsEnabled, req.AllowedAttachmentTypes ?? []);
+            req.AttachmentsEnabled, req.AllowedAttachmentTypes ?? [],
+            req.SourceSchemaId, req.SourceSchemaVersion, IsPlatformAdmin);
         return CreatedAtAction(nameof(Get),
             new { app_slug = CurrentApp.Slug, slug = collection.Slug },
-            collection.ToDto());
+            await ToDtoAsync(collection));
     }
 
     [HttpGet("{slug}")]
     public async Task<ActionResult<CollectionDto>> Get([FromRoute] string slug)
     {
         var collection = await collectionService.GetBySlugAsync(CurrentApp.Id, slug);
-        return Ok(collection.ToDto());
+        return Ok(await ToDtoAsync(collection));
     }
 
     [HttpPut("{slug}")]
@@ -48,8 +64,9 @@ public class CollectionsController(CollectionService collectionService) : Contro
     {
         var collection = await collectionService.GetBySlugAsync(CurrentApp.Id, slug);
         var updated = await collectionService.UpdateAsync(
-            collection, req.Name, req.Schema, req.AttachmentsEnabled, req.AllowedAttachmentTypes);
-        return Ok(updated.ToDto());
+            collection, req.Name, req.Schema, req.AttachmentsEnabled, req.AllowedAttachmentTypes,
+            req.SourceSchemaId, req.SourceSchemaVersion, req.DetachSourceSchema ?? false, IsPlatformAdmin);
+        return Ok(await ToDtoAsync(updated));
     }
 
     [HttpDelete("{slug}")]

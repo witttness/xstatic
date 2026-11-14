@@ -1,5 +1,6 @@
 using Extatic.Api.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Extatic.Api.Data.EntityConfigurations;
@@ -20,5 +21,15 @@ public class CollectionConfiguration : IEntityTypeConfiguration<Collection>
                .WithMany(a => a.Collections)
                .HasForeignKey(c => c.AppId)
                .OnDelete(DeleteBehavior.Cascade);
+        // Schema Library provenance: deleting the library schema keeps the copied schema.
+        builder.HasOne<Extatic.Api.Features.SchemaLibrary.LibrarySchema>()
+               .WithMany()
+               .HasForeignKey(c => c.SourceSchemaId)
+               .OnDelete(DeleteBehavior.SetNull);
+        // Not part of the INSERT (CollectionService.CreateAsync writes provenance with a follow-up UPDATE in the
+        // same transaction), so code that inserts collections into a database migrated only to an older
+        // schema (ItemMigrationTests) keeps working.
+        builder.Property(c => c.SourceSchemaId).Metadata.SetBeforeSaveBehavior(PropertySaveBehavior.Ignore);
+        builder.Property(c => c.SourceSchemaVersion).Metadata.SetBeforeSaveBehavior(PropertySaveBehavior.Ignore);
     }
 }
