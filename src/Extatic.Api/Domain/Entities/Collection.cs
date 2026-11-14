@@ -1,6 +1,6 @@
 namespace Extatic.Api.Domain.Entities;
 
-public class Collection
+public class Collection : IAppScoped
 {
     public Guid Id { get; set; }
     public Guid AppId { get; set; }

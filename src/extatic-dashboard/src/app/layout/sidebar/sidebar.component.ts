@@ -6,6 +6,43 @@ import { AuthService } from '../../core/services/auth.service';
 import { ApiService } from '../../core/services/api.service';
 import { App } from '../../core/models/app.model';
 
+export interface NavLink {
+  label: string;
+  /** App-scoped links: path segment under /apps/:appSlug. Admin links: absolute path. */
+  path: string;
+}
+
+/** Core app-scoped pages (Settings is rendered last, after the feature links). */
+export const CORE_APP_LINKS: NavLink[] = [
+  { label: 'Collections', path: 'collections' },
+  { label: 'Team', path: 'collaborators' },
+  { label: 'Users', path: 'appusers' },
+  { label: 'Webhooks', path: 'webhooks' },
+];
+
+/** Feature modules (see docs/feature-modules.md). Routes live in features/<x>/<x>.routes.ts. */
+export const FEATURE_APP_LINKS: NavLink[] = [
+  { label: 'Forms', path: 'forms' },
+  { label: 'Events', path: 'events' },
+  { label: 'Comments', path: 'comments' },
+  { label: 'Authentication', path: 'authentication' },
+  { label: 'Members', path: 'members' },
+  { label: 'Donations', path: 'donations' },
+  { label: 'Search', path: 'search' },
+  { label: 'Scheduling', path: 'scheduling' },
+];
+
+/** Only /apps/:slug[/...] is app-scoped; /apps, /admin/... and anything else are not. */
+export function extractAppSlug(url: string): string | null {
+  const match = url.match(/^\/apps\/([^/?#;]+)/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+/** Platform-admin pages, shown only when the current user is_admin. */
+export const ADMIN_LINKS: NavLink[] = [
+  { label: 'Schema Library', path: '/admin/schemas' },
+];
+
 @Component({
   selector: 'app-sidebar',
   standalone: true,
@@ -33,31 +70,39 @@ import { App } from '../../core/models/app.model';
             <div class="px-4 py-1 text-xs text-text-muted uppercase tracking-wider font-medium">
               {{ currentAppName() || currentAppSlug() }}
             </div>
-            <a
-              [routerLink]="['/apps', currentAppSlug(), 'collections']"
-              routerLinkActive="bg-surface text-text-primary"
-              class="flex items-center px-4 py-2 text-sm text-text-muted hover:bg-surface hover:text-text-primary transition-colors"
-            >Collections</a>
-            <a
-              [routerLink]="['/apps', currentAppSlug(), 'collaborators']"
-              routerLinkActive="bg-surface text-text-primary"
-              class="flex items-center px-4 py-2 text-sm text-text-muted hover:bg-surface hover:text-text-primary transition-colors"
-            >Team</a>
-            <a
-              [routerLink]="['/apps', currentAppSlug(), 'appusers']"
-              routerLinkActive="bg-surface text-text-primary"
-              class="flex items-center px-4 py-2 text-sm text-text-muted hover:bg-surface hover:text-text-primary transition-colors"
-            >Users</a>
-            <a
-              [routerLink]="['/apps', currentAppSlug(), 'webhooks']"
-              routerLinkActive="bg-surface text-text-primary"
-              class="flex items-center px-4 py-2 text-sm text-text-muted hover:bg-surface hover:text-text-primary transition-colors"
-            >Webhooks</a>
+            @for (link of coreLinks; track link.path) {
+              <a
+                [routerLink]="['/apps', currentAppSlug(), link.path]"
+                routerLinkActive="bg-surface text-text-primary"
+                class="flex items-center px-4 py-2 text-sm text-text-muted hover:bg-surface hover:text-text-primary transition-colors"
+              >{{ link.label }}</a>
+            }
+            <div class="px-4 pt-3 pb-1 text-xs text-text-muted uppercase tracking-wider font-medium">Features</div>
+            @for (link of featureLinks; track link.path) {
+              <a
+                [routerLink]="['/apps', currentAppSlug(), link.path]"
+                routerLinkActive="bg-surface text-text-primary"
+                class="flex items-center px-4 py-2 text-sm text-text-muted hover:bg-surface hover:text-text-primary transition-colors"
+              >{{ link.label }}</a>
+            }
             <a
               [routerLink]="['/apps', currentAppSlug(), 'settings']"
               routerLinkActive="bg-surface text-text-primary"
               class="flex items-center px-4 py-2 text-sm text-text-muted hover:bg-surface hover:text-text-primary transition-colors"
             >Settings</a>
+          </div>
+        }
+
+        @if (user()?.is_admin) {
+          <div class="mt-2 pt-2 border-t border-border">
+            <div class="px-4 py-1 text-xs text-text-muted uppercase tracking-wider font-medium">Admin</div>
+            @for (link of adminLinks; track link.path) {
+              <a
+                [routerLink]="link.path"
+                routerLinkActive="bg-surface text-text-primary"
+                class="flex items-center px-4 py-2 text-sm text-text-muted hover:bg-surface hover:text-text-primary transition-colors"
+              >{{ link.label }}</a>
+            }
           </div>
         }
       </div>
@@ -80,13 +125,16 @@ export class SidebarComponent implements OnInit {
   private api = inject(ApiService);
 
   user = this.auth.currentUser;
+  coreLinks = CORE_APP_LINKS;
+  featureLinks = FEATURE_APP_LINKS;
+  adminLinks = ADMIN_LINKS;
 
   currentAppSlug = toSignal(
     this.router.events.pipe(
       filter(e => e instanceof NavigationEnd),
-      map(() => this.extractAppSlug(this.router.url))
+      map(() => extractAppSlug(this.router.url))
     ),
-    { initialValue: this.extractAppSlug(this.router.url) }
+    { initialValue: extractAppSlug(this.router.url) }
   );
 
   currentAppName = signal<string | null>(null);
@@ -96,11 +144,6 @@ export class SidebarComponent implements OnInit {
     const u = this.user();
     if (!u) return '';
     return (u.name || u.email).substring(0, 2).toUpperCase();
-  }
-
-  private extractAppSlug(url: string): string | null {
-    const match = url.match(/^\/apps\/([^/]+)/);
-    return match ? match[1] : null;
   }
 
   ngOnInit() {

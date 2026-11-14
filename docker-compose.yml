@@ -38,11 +38,25 @@ services:
       - Jwt__Key=dev-secret-key-minimum-32-chars-long!!
       - Jwt__Issuer=extatic-dev
       - Jwt__Audience=extatic-client
+      - Platform__AdminEmails=dev@extatic.local
+      - Email__FromAddress=no-reply@extatic.local
+      - Email__Smtp__Host=mailpit
+      - Email__Smtp__Port=1025
+      - Email__Smtp__UseStartTls=false
     depends_on:
       postgres:
         condition: service_healthy
       azurite:
         condition: service_started
+      mailpit:
+        condition: service_started
+
+  # Local SMTP sink. All outgoing email is captured here; UI at http://localhost:8025
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "1025:1025"
+      - "8025:8025"
 
   # Local OIDC identity provider. Exposes a static user: dev@extatic.local / password
   dex:

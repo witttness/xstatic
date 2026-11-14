@@ -2,7 +2,7 @@ using Extatic.Api.Domain.Enums;
 
 namespace Extatic.Api.Domain.Entities;
 
-public class Collaborator
+public class Collaborator : IAppScoped
 {
     public Guid Id { get; set; }
     public Guid AppId { get; set; }

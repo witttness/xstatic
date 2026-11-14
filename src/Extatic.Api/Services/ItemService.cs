@@ -7,8 +7,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Extatic.Api.Services;
 
-public class ItemService(AppDbContext db, JsonSchemaValidator validator, WebhookDispatcher webhookDispatcher)
+public class ItemService(
+    AppDbContext db,
+    JsonSchemaValidator validator,
+    WebhookDispatcher webhookDispatcher,
+    IEnumerable<IItemChangeListener>? listeners = null)
 {
+    private readonly IItemChangeListener[] itemListeners = listeners?.ToArray() ?? [];
+
     public async Task<(List<Item> Items, int Total)> GetForCollectionAsync(
         Guid collectionId, int page, int pageSize)
     {
@@ -54,6 +60,7 @@ public class ItemService(AppDbContext db, JsonSchemaValidator validator, Webhook
         db.Items.Add(item);
         await webhookDispatcher.StageAsync(db, appId, "item.created", data);
         await db.SaveChangesAsync();
+        await NotifySavedAsync(appId, item, created: true);
         await transaction.CommitAsync();
         return item;
     }
@@ -78,6 +85,7 @@ public class ItemService(AppDbContext db, JsonSchemaValidator validator, Webhook
         try
         {
             await db.SaveChangesAsync();
+            await NotifySavedAsync(appId, item, created: false);
             await transaction.CommitAsync();
         }
         catch (DbUpdateConcurrencyException)
@@ -91,9 +99,21 @@ public class ItemService(AppDbContext db, JsonSchemaValidator validator, Webhook
     {
         var itemId = item.Id;
         await attachmentService.DeleteAllForItemAsync(item);
+        // Listener changes and the Item removal go out in one SaveChanges (one implicit transaction).
+        foreach (var listener in itemListeners)
+            await listener.OnItemDeletingAsync(db, appId, item);
         db.Items.Remove(item);
         await db.SaveChangesAsync();
         await webhookDispatcher.EnqueueAsync(appId, "item.deleted", itemId,
             JsonSerializer.SerializeToElement(new { id = itemId }));
+    }
+
+    private async Task NotifySavedAsync(Guid appId, Item item, bool created)
+    {
+        if (itemListeners.Length == 0) return;
+        foreach (var listener in itemListeners)
+            await listener.OnItemSavedAsync(db, appId, item, created);
+        if (db.ChangeTracker.HasChanges())
+            await db.SaveChangesAsync();
     }
 }

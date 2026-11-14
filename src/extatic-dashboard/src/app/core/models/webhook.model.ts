@@ -1,11 +1,8 @@
-export type WebhookEvent =
-  | 'item.created'
-  | 'item.updated'
-  | 'item.deleted'
-  | 'appuser.created'
-  | 'appuser.updated'
-  | 'attachment.created'
-  | 'attachment.deleted';
+/**
+ * A webhook event type, e.g. 'item.created' or a feature event such as 'form.submitted'.
+ * The valid set comes from GET /api/webhook-events (see WebhookEventsService).
+ */
+export type WebhookEvent = string;
 
 export interface Webhook {
   id: string;

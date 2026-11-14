@@ -1,6 +1,6 @@
 namespace Extatic.Api.Domain.Entities;
 
-public class Webhook
+public class Webhook : IAppScoped
 {
     public Guid Id { get; set; }
     public Guid AppId { get; set; }

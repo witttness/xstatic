@@ -1,16 +1,12 @@
 import { Component, Input, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ApiService } from '../../../core/services/api.service';
+import { WebhookEventsService } from '../../../core/services/webhook-events.service';
 import { Webhook, WebhookEvent } from '../../../core/models/webhook.model';
 import { PageHeaderComponent } from '../../../shared/page-header/page-header.component';
 import { ButtonComponent } from '../../../shared/button/button.component';
-
-const EVENT_GROUPS: { label: string; events: WebhookEvent[] }[] = [
-  { label: 'Items', events: ['item.created', 'item.updated', 'item.deleted'] },
-  { label: 'AppUsers', events: ['appuser.created', 'appuser.updated'] },
-  { label: 'Attachments', events: ['attachment.created', 'attachment.deleted'] },
-];
 
 @Component({
   selector: 'app-webhook-form',
@@ -32,7 +28,7 @@ const EVENT_GROUPS: { label: string; events: WebhookEvent[] }[] = [
 
       <div>
         <label class="block text-xs font-medium text-text-muted uppercase tracking-wider mb-2">Events</label>
-        @for (group of eventGroups; track group.label) {
+        @for (group of eventGroups(); track group.label) {
           <div class="mb-3">
             <div class="text-xs text-text-muted mb-1">{{ group.label }}</div>
             @for (event of group.events; track event) {
@@ -43,6 +39,9 @@ const EVENT_GROUPS: { label: string; events: WebhookEvent[] }[] = [
               </label>
             }
           </div>
+        }
+        @if (eventGroups().length === 0) {
+          <p class="text-xs text-text-muted">Loading events…</p>
         }
         @if (eventsError()) {
           <p class="text-xs text-error">Select at least one event.</p>
@@ -65,7 +64,8 @@ export class WebhookFormComponent {
   private router = inject(Router);
   private fb = inject(FormBuilder);
 
-  eventGroups = EVENT_GROUPS;
+  private webhookEvents = inject(WebhookEventsService);
+  eventGroups = toSignal(this.webhookEvents.groups$, { initialValue: [] });
   selectedEvents = new Set<WebhookEvent>();
   eventsError = signal(false);
   saving = signal(false);
